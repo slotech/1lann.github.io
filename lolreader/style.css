@@ -1,0 +1,62 @@
+.container {
+	margin-top: 20px;
+	text-align: center;
+}
+
+h1 {
+	font-size: 50px;
+}
+
+h2 {
+	font-weight: 200;
+}
+
+h3 {
+	font-size: 50px;
+	font-weight: 600;
+}
+
+h4 {
+	font-size: 50px;
+	font-weight: 300;
+}
+
+#main {
+	text-align: left;
+}
+
+#drop-cover {
+	position: absolute;
+	width: 100%;
+	height: 100%;
+	top: 0;
+	left: 0;
+	text-align: center;
+	color: white;
+	background-color: #83c34e;
+	opacity: 0;
+	z-index: -5;
+}
+
+#drop-it {
+	text-align: center;
+	font-size: 100px;
+	width: 100%;
+	position: absolute;
+	height: 200px;
+	top: 50%;
+	margin-top: -100px;
+}
+
+#drop-cover.in {
+	z-index: 5;
+	opacity: 1;
+}
+
+#drop-cover.fade {
+	-webkit-transition: all 0.2s ease-out;
+	-moz-transition: all 0.2s ease-out;
+	-ms-transition: all 0.2s ease-out;
+	-o-transition: all 0.2s ease-out;
+	transition: all 0.2s ease-out;
+}
