@@ -1,63 +1,11 @@
-var dropZone = $("#drop-cover, #drop-it");
-var cancelAnimateOut = false;
-var processLock = false;
-var correctDirectory = false;
-	
-$(document).bind('dragover', function (e) {
-    if (!processLock) {
-        cancelAnimateOut = false;
-        timeout = window.dropZoneTimeout;
-        if (!timeout) {
-            $("#drop-it").text("Drop it!");
-            dropZone.addClass('show');
-        } else {
-            clearTimeout(timeout);
-        }
-        var found = false,
-        node = e.target;
-        do {
-            if (node === dropZone[0]) {
-                found = true;
-                break;
-            }
-            node = node.parentNode;
-        } while (node != null);
-
-        window.dropZoneTimeout = setTimeout(function () {
-            window.dropZoneTimeout = null;
-            if (!cancelAnimateOut) dropZone.removeClass('show');
-        }, 100);
-    }
-	e.preventDefault();
-});
-
-document.ondrop = function(e) {
-    processLock = true;
-    e.preventDefault();
-
-	dropZone.addClass("show");
-    cancelAnimateOut = true;
-    
-    changeTextTimeout = function() {
-        if (processLock) {
-            $("#drop-it").text("Processing...");
-            $("#drop-it, #drop-sub").addClass("show");
-        }
-    }
-    
-    $("#drop-it").removeClass("show");
-    
-    setTimeout(changeTextTimeout, 250);
-    correctDirectory = false;
-    processTest(e.dataTransfer.items);
-    e.dataTransfer = null;
-}
-
 // Everything from here down is for core development
 // This will then be moved into a WebWorker in the future supposedly...
 
-var gameDatabase = [] // Will store game data
-var summonerDatabase = {} // Will point to a game in the gameDatabase
+var gameDatabase = {} // Will store game data
+var summonerDatabase = {} // Will be used to see who you most play with
+var frequencyDatabase = []
+var summonerName;
+
 var gameStats = {
     "time": 0,
     "loading": 0
@@ -71,11 +19,69 @@ var toArray = function(list) {
 var processProgress = 0;
 var numOfFiles = 0;
 
+var getRates = function(summoner, champion) {
+    var wins = 0;
+    var loses = 0;
+    if (!champion) {
+        for (var champion in summonerDatabase[summoner]) {
+            for (var key in summonerDatabase[summoner][champion]) {
+                if (gameDatabase[summonerDatabase[summoner][champion][key]]["result"] == "win") {
+                    wins++;
+                } else {
+                    loses++;
+                }
+            }
+        }
+    } else {
+        for (var key in summonerDatabase[summoner][champion]) {
+            if (gameDatabase[summonerDatabase[summoner][champion][key]]["result"] == "win") {
+                wins++;
+            } else {
+                loses++;
+            }
+        }
+    }
+    return [wins, loses, Math.ceil((wins/(loses+wins))*1000-0.5)/10];
+}
+
+var summonersPlayedWith = function() {
+    var summonerFrequency = {};
+    for (var summoner in summonerDatabase) {
+        summonerFrequency[summoner] = 0;
+        for (var championName in summonerDatabase[summoner]) {
+            for (var key in summonerDatabase[summoner][championName]) {
+                summonerFrequency[summoner]++;
+            }
+        }
+    }
+    var frequencyInOrder = []
+    for (var key in summonerFrequency) frequencyInOrder.push([key, summonerFrequency[key]]);
+    frequencyInOrder.sort(function(a, b) {
+        a = a[1];
+        b = b[1];
+        
+        return a < b ? 1 : (a > b ? -1:0);
+    });
+    summonerName = frequencyInOrder.shift()[0];
+    frequencyDatabase = frequencyInOrder;
+}
+
 var fileNameRegex = /(\d{4}-\d{2}-\d{2})T(\d{2}-\d{2})-\d{2}_r3dlog\.txt$/
 var playersRegex = /Spawning champion \(([^\)]+)\) with skinID \d+ on team (\d)00 for clientID \d and summonername \(([^\)]+)\) \(is HUMAN PLAYER\)/g
 var gameEndTimeRegex = /^(\d+\.\d+).+{"messageType":"riot__game_client__connection_info","message_body":"Game exited","exit_code":"EXITCODE_([^"]+)"}$/m
 var gameStartTimeRegex= /^(\d+\.\d+).+GAMESTATE_GAMELOOP Begin$/m
 var gameTypeRegex = /Initializing GameModeComponents for mode=(\w+)\./
+var gameIDRegex = /Receiving PKT_World_SendGameNumber, GameID: ([^,]+),/
+
+var pushIfNotPresent = function(arr, data) {
+    for (var key in arr) {
+        if (arr[key] == data) {
+            return false   
+        }
+    }
+    arr.push(data);
+    return true;
+}
 
 var processFile = function(fileEntry) {
     if (fileNameRegex.exec(fileEntry.name)) {
@@ -86,6 +92,7 @@ var processFile = function(fileEntry) {
                 var gameDataConstruct = {};
                 var logData = this.result;
                 var errors = 0;
+                var gameID = gameIDRegex.exec(logData);
                 var dateTime = fileNameRegex.exec(fileEntry.name);
                 gameDataConstruct["date"] = dateTime[1].replace(/-/g,"/")+" "+dateTime[2].replace("-",":");
                 gameDataConstruct["blue"] = {};
@@ -96,6 +103,11 @@ var processFile = function(fileEntry) {
                     } else {
                         gameDataConstruct["purple"][player[3]] = player[1];
                     }
+                    if (!summonerDatabase[player[3]]) summonerDatabase[player[3]] = {};
+                    if (!summonerDatabase[player[3]][player[1]]) summonerDatabase[player[3]][player[1]] = [];
+                    if (gameID) {
+                        pushIfNotPresent(summonerDatabase[player[3]][player[1]], gameID[1]);
+                    }
                 }
                 var gameEnd = gameEndTimeRegex.exec(logData);
                 var gameEndTime;
@@ -103,32 +115,36 @@ var processFile = function(fileEntry) {
                     gameEndTime = parseFloat(gameEnd[1]);
                     gameDataConstruct["result"] = gameEnd[2].toLowerCase();
                 } else {
-                    errors = errors+1;
+                    errors++;
                     gameDataConstruct["result"] = "unknown";
                 }
                 var gameStart = gameStartTimeRegex.exec(logData);
                 if (gameStart) {
                     var gameStartTime = parseFloat(gameStart[1]);
-                    gameDataConstruct["time"] = gameEndTime-gameStartTime;
                     gameDataConstruct["loading-time"] = gameStartTime;
-                    gameStats["time"] = gameStats["time"]+gameDataConstruct["time"];
                     gameStats["loading"] = gameStats["loading"]+gameDataConstruct["loading-time"]
+                    if (gameEndTime) {
+                        gameDataConstruct["time"] = gameEndTime-gameStartTime;
+                        gameStats["time"] = gameStats["time"]+gameDataConstruct["time"];
+                    } else {
+                        gameDataConstruct["time"] = 0;   
+                    }
                 } else {
                     gameDataConstruct["time"] = 0;
                     gameDataConstruct["loading-time"] = 0;
-                    errors = errors+1;
+                    errors++;
                 }
                 var gameType = gameTypeRegex.exec(logData);
                 if (gameType) {
                     gameDataConstruct["type"] = gameType[1].toLowerCase();
                 } else {
                     gameDataConstruct["type"] = "unknown";
-                    errors = errors+1;
+                    errors++;
                 }
-                if (errors <= 1) {
-                    gameDatabase.push(gameDataConstruct);
+                if (errors <= 1 && gameID) {
+                    gameDatabase[gameID[1]] = gameDataConstruct;
                 }
-                processProgress = processProgress+1;
+                processProgress++;
                 logData = null;
                 this.result = null;
             };
@@ -144,7 +160,13 @@ var processFile = function(fileEntry) {
 var progressInterval;
 
 var displayProgress = function() {
-    
+    var percent = Math.ceil((processProgress/numOfFiles)/1.333333*1000-0.5)/10;
+    $("#progress-cover").width(percent.toString()+"%");
+    $("#drop-sub").text("Progress: "+percent.toString()+"%");
+    if (percent >= 75) {
+        clearInterval(progressInterval);   
+        summonersPlayedWith();
+    }
 }
 
 var levels = 0;
@@ -184,27 +206,18 @@ var processFolders = function() {
     }
 }
 
-var processFailure = function() {
-    dropZone.removeClass("show");
-    $("#drop-it, #drop-sub").removeClass("show");
-    $("#step-number").text("Could not find logs - Try again");
-    $("#step-number").css("font-size", "60px");
-    $("#step-number").css("color", "#bc3a3a");
-    processLock = false;
-}
-
 processTest = function(files) {
     if (correctDirectory) {
         return;   
     }
     busy = true;
-    levels = levels+1;
+    levels++;
     if (levels > 100) {
         console.log("Reached max depth level")
         clearInterval(folderProcessInterval);
         folderProcessInterval = null;
         folderProcessStack = [];
-        processFailure();
+        processFailure("Could not find logs - Try again");
         return;
     }
     var length = files.length;
@@ -220,11 +233,17 @@ processTest = function(files) {
             if (processFile(entry)) {
                 processProgress = 0;
                 numOfFiles = length;
-                console.log("Number of files:",numOfFiles);
-                correctDirectory = true;
                 clearInterval(folderProcessInterval);
                 folderProcessInterval = null;
                 folderProcessStack = [];
+                if (numOfFiles >= 20) {
+                    correctDirectory = true;
+                    progressInterval = setInterval(displayProgress, 200);
+                } else {
+                    files = null;
+                    processFailure("Not enough logs to generate useful information!");   
+                    return;
+                }
             }
         } else if (entry.isFile && correctDirectory) {
             processFile(entry);
@@ -239,6 +258,6 @@ processTest = function(files) {
     if (folderProcessStack.length <= 0 && !correctDirectory) {
         console.log("Could not find files"); 
         files = null;
-        processFailure();
+        processFailure("Could not find logs - Try again");
     }
 }
