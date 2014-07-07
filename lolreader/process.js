@@ -92,23 +92,10 @@ var processFile = function(fileEntry) {
                 var gameDataConstruct = {};
                 var logData = this.result;
                 var errors = 0;
+                
                 var gameID = gameIDRegex.exec(logData);
                 var dateTime = fileNameRegex.exec(fileEntry.name);
                 gameDataConstruct["date"] = dateTime[1].replace(/-/g,"/")+" "+dateTime[2].replace("-",":");
-                gameDataConstruct["blue"] = {};
-                gameDataConstruct["purple"] = {};
-                while (player = playersRegex.exec(logData)) {
-                    if (player[2] == "1") {
-                        gameDataConstruct["blue"][player[3]] = player[1];
-                    } else {
-                        gameDataConstruct["purple"][player[3]] = player[1];
-                    }
-                    if (!summonerDatabase[player[3]]) summonerDatabase[player[3]] = {};
-                    if (!summonerDatabase[player[3]][player[1]]) summonerDatabase[player[3]][player[1]] = [];
-                    if (gameID) {
-                        pushIfNotPresent(summonerDatabase[player[3]][player[1]], gameID[1]);
-                    }
-                }
                 var gameEnd = gameEndTimeRegex.exec(logData);
                 var gameEndTime;
                 if (gameEnd) {
@@ -142,6 +129,19 @@ var processFile = function(fileEntry) {
                     errors++;
                 }
                 if (errors <= 1 && gameID) {
+                    gameDataConstruct["blue"] = {};
+                    gameDataConstruct["purple"] = {};
+                    while (player = playersRegex.exec(logData)) {
+                        if (player[2] == "1") {
+                            gameDataConstruct["blue"][player[3]] = player[1];
+                        } else {
+                            gameDataConstruct["purple"][player[3]] = player[1];
+                        }
+                        if (!summonerDatabase[player[3]]) summonerDatabase[player[3]] = {};
+                        if (!summonerDatabase[player[3]][player[1]]) summonerDatabase[player[3]][player[1]] = [];
+                        pushIfNotPresent(summonerDatabase[player[3]][player[1]], gameID[1]);
+                    }
+                    
                     gameDatabase[gameID[1]] = gameDataConstruct;
                 }
                 processProgress++;
