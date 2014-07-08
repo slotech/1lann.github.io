@@ -7,7 +7,6 @@ var frequencyDatabase = []
 var summonerName;
 
 var gameStats = {
-    "time": 0,
     "loading": 0
 };
 
@@ -19,29 +18,73 @@ var toArray = function(list) {
 var processProgress = 0;
 var numOfFiles = 0;
 
+var getRegion = function(summoner) {
+    var regionFrequency = {};
+    for (var champion in summonerDatabase[summoner]) {
+        for (var key in summonerDatabase[summoner][champion]) {
+            var region = gameDatabase[summonerDatabase[summoner][champion][key]]["region"];
+            if (!regionFrequency[region]) {
+                regionFrequency[region] = 0;
+                console.log(region);
+            }
+            regionFrequency[region]++;
+        }
+    }
+    var mostOccur = 0;
+    var mostRegion = "";
+    for (var region in regionFrequency) {
+        if (regionFrequency[region] > mostOccur) {
+            mostOccur = regionFrequency[region];
+            mostRegion = region;
+        }
+    }
+    return mostRegion;
+}
+
 var getRates = function(summoner, champion) {
     var wins = 0;
     var loses = 0;
     if (!champion) {
         for (var champion in summonerDatabase[summoner]) {
             for (var key in summonerDatabase[summoner][champion]) {
-                if (gameDatabase[summonerDatabase[summoner][champion][key]]["result"] == "win") {
+                var gameObject = gameDatabase[summonerDatabase[summoner][champion][key]];
+                if (gameObject["blue"][summonerName] || gameObject["purple"][summonerName]) {
+                    if (gameObject["result"] == "win") {
+                        wins++;
+                    } else {
+                        loses++;
+                    }
+                }
+            }
+        }
+    } else {
+        for (var key in summonerDatabase[summoner][champion]) {
+            var gameObject = gameDatabase[summonerDatabase[summoner][champion][key]];
+            if (gameObject["blue"][summonerName] || gameObject["purple"][summonerName]) {
+                if (gameObject["result"] == "win") {
                     wins++;
                 } else {
                     loses++;
                 }
             }
         }
-    } else {
+    }
+    return [wins+loses, wins, loses, Math.ceil((wins/(loses+wins))*1000-0.5)/10];
+}
+
+var timeSpentPlaying = function(summoner) {
+    var totalTime = 0;
+    var games = 0;
+    for (var champion in summonerDatabase[summoner]) {
         for (var key in summonerDatabase[summoner][champion]) {
-            if (gameDatabase[summonerDatabase[summoner][champion][key]]["result"] == "win") {
-                wins++;
-            } else {
-                loses++;
+            var gameObject = gameDatabase[summonerDatabase[summoner][champion][key]];
+            if (gameObject["time"] && (gameObject["blue"][summonerName] || gameObject["purple"][summonerName])) {
+                totalTime = totalTime+gameDatabase[summonerDatabase[summoner][champion][key]]["time"];
+                games++;
             }
         }
     }
-    return [wins, loses, Math.ceil((wins/(loses+wins))*1000-0.5)/10];
+    return totalTime;
 }
 
 var summonersPlayedWith = function() {
@@ -66,12 +109,30 @@ var summonersPlayedWith = function() {
     frequencyDatabase = frequencyInOrder;
 }
 
+var championsPlayedWith = function(summoner) {
+    var championFrequency = {};
+    var total = 0;
+    for (var champion in summonerDatabase[summoner]) {
+        championFrequency[champion] = summonerDatabase[summoner][champion].length;
+        total = total+summonerDatabase[summoner][champion].length;
+    }
+    var frequencyInOrder = []
+    for (var key in championFrequency) frequencyInOrder.push([key, championFrequency[key]]);
+    frequencyInOrder.sort(function(a, b) {
+        a = a[1];
+        b = b[1];
+        
+        return a < b ? 1 : (a > b ? -1:0);
+    });
+    return frequencyInOrder;
+}
+
 var fileNameRegex = /(\d{4}-\d{2}-\d{2})T(\d{2}-\d{2})-\d{2}_r3dlog\.txt$/
 var playersRegex = /Spawning champion \(([^\)]+)\) with skinID \d+ on team (\d)00 for clientID \d and summonername \(([^\)]+)\) \(is HUMAN PLAYER\)/g
 var gameEndTimeRegex = /^(\d+\.\d+).+{"messageType":"riot__game_client__connection_info","message_body":"Game exited","exit_code":"EXITCODE_([^"]+)"}$/m
 var gameStartTimeRegex= /^(\d+\.\d+).+GAMESTATE_GAMELOOP Begin$/m
 var gameTypeRegex = /Initializing GameModeComponents for mode=(\w+)\./
-var gameIDRegex = /Receiving PKT_World_SendGameNumber, GameID: ([^,]+),/
+var gameIDRegex = /Receiving PKT_World_SendGameNumber, GameID: ([^,]+), PlatformID: ([A-Z]+)/
 
 var pushIfNotPresent = function(arr, data) {
     for (var key in arr) {
@@ -112,7 +173,6 @@ var processFile = function(fileEntry) {
                     gameStats["loading"] = gameStats["loading"]+gameDataConstruct["loading-time"]
                     if (gameEndTime) {
                         gameDataConstruct["time"] = gameEndTime-gameStartTime;
-                        gameStats["time"] = gameStats["time"]+gameDataConstruct["time"];
                     } else {
                         gameDataConstruct["time"] = 0;   
                     }
@@ -140,6 +200,10 @@ var processFile = function(fileEntry) {
                         if (!summonerDatabase[player[3]]) summonerDatabase[player[3]] = {};
                         if (!summonerDatabase[player[3]][player[1]]) summonerDatabase[player[3]][player[1]] = [];
                         pushIfNotPresent(summonerDatabase[player[3]][player[1]], gameID[1]);
+                    }
+                    gameDataConstruct["region"] = gameID[2].toLowerCase();
+                    if (gameDataConstruct["region"] == "oc") {
+                        gameDataConstruct["region"] = "oce";   
                     }
                     
                     gameDatabase[gameID[1]] = gameDataConstruct;
@@ -260,4 +324,17 @@ processTest = function(files) {
         files = null;
         processFailure("Could not find logs - Try again");
     }
+}
+
+var resetDatabase = function() {
+    gameDatabase = {}
+    summonerDatabase = {}
+    frequencyDatabase = []
+    summonerName = null;
+    gameStats = {
+        "time": 0,
+        "loading": 0
+    };
+    processProgress = 0;
+    numOfFiles = 0;
 }

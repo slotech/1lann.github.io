@@ -1,6 +1,10 @@
+/* Debugging */
+#main, #drop-cover, #title {
+    display: none;
+}
+
 .container {
-	margin-top: 20px;
-	text-align: center;
+
 }
 
 h1 {
@@ -19,6 +23,11 @@ h3 {
 h4 {
 	font-size: 50px;
 	font-weight: 300;
+}
+
+#title {
+    margin-top: 20px;
+    text-align: center;
 }
 
 #main {

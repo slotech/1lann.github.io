@@ -1,0 +1,106 @@
+#summoner-name {
+    font-size: 50px;
+    font-weight 600;
+}
+
+#title-div {
+    width: 50%;
+    float: left;
+}
+
+#general-stats-div {
+    width: 50%;
+    float: right;
+    padding-left: 20px;
+}
+
+#left-container {
+    width: 50%;
+    padding-right: 20px;
+    float: left;
+}
+
+#right-container {
+    width: 50%;
+    padding-left: 20px;
+    float: right;
+}
+
+#general-stats {
+    width: 100%;
+    height: 130px;
+    margin-top: 20px;
+}
+
+.stat-style {
+    font-size: 20px;
+    line-height: 16px;
+    text-align: left;
+}
+
+.section-title {
+    font-size: 30px;
+}
+/*
+<div class="info-card">
+    <div class="main-area">
+        <img src="http://ddragon.leagueoflegends.com/cdn/4.10.7/img/champion/Chogath.png" alt="Chogath">
+        <div class="left-section">
+            <span class="name">Heimerdinger</span><br>
+            <span class="games-played">100 games played</span>
+        </div>
+        <div class="win-rate"><span>56%</span></div>
+        <div class="win-rate-text"><span>Win rate</span></div>
+    </div>
+    <div class="expand-area">
+        <span class="glyphicon glyphicon-chevron-down"></span>
+    </div>
+</div>
+*/
+.info-card {
+    margin-top: 20px;
+    background-color: #fafafa;
+    height: 120px;
+}
+
+.main-area {
+    border: 1px solid #a6a6a6;
+    border-radius: 6px;
+    border-bottom-left-radius: 0px;
+    border-bottom-right-radius: 0px;
+    background-color: #fafafa;
+    height: 117px;
+}
+
+.expand-area {
+    padding-top: 5px;
+    padding-bottom: 5px;
+    text-align: center;
+    background-color: #e6e6e6;
+    border-bottom: 1px solid #a6a6a6;
+    border-left: 1px solid #a6a6a6;
+    border-right: 1px solid #a6a6a6;
+}
+
+.info-card img {
+    width: 80px;
+    margin-top: 17px;
+    margin-left: 18px;
+}
+
+.left-section {
+    display: inline-block;
+    margin-left: 15px;
+    overflow: hidden;
+    margin-bottom: -33px;
+    line-height: 21px;
+}
+
+.info-card .name {
+    font-size: 30px;
+}
+
+.info-card .games-played {
+    font-size: 18px;
+    font-weight: 200;
+}
