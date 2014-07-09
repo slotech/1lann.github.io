@@ -3,7 +3,7 @@
 
 var gameDatabase = {} // Will store game data
 var summonerDatabase = {} // Will be used to see who you most play with
-var frequencyDatabase = []
+var summonerFrequencyDatabase = {};
 var summonerName;
 
 var gameStats = {
@@ -25,7 +25,6 @@ var getRegion = function(summoner) {
             var region = gameDatabase[summonerDatabase[summoner][champion][key]]["region"];
             if (!regionFrequency[region]) {
                 regionFrequency[region] = 0;
-                console.log(region);
             }
             regionFrequency[region]++;
         }
@@ -41,7 +40,13 @@ var getRegion = function(summoner) {
     return mostRegion;
 }
 
+var ratesCache = {}
 var getRates = function(summoner, champion) {
+    if (champion && ratesCache[summoner+":"+champion]) {
+        return ratesCache[summoner+":"+champion];
+    } else if (!champion && ratesCache[summoner]) {
+        return ratesCache[summoner];
+    }
     var blueWins = 0;
     var blueLoses = 0;
     var purpleWins = 0;
@@ -64,6 +69,7 @@ var getRates = function(summoner, champion) {
                     }
                 }
             }
+            ratesCache[summoner] = [blueWins+purpleWins, blueLoses+purpleLoses, blueWins, blueLoses, purpleWins, purpleLoses];
         }
     } else {
         for (var key in summonerDatabase[summoner][champion]) {
@@ -82,26 +88,35 @@ var getRates = function(summoner, champion) {
                 }
             }
         }
+        ratesCache[summoner+":"+champion] = [blueWins+purpleWins, blueLoses+purpleLoses, blueWins, blueLoses, purpleWins, purpleLoses];
     }
     return [blueWins+purpleWins, blueLoses+purpleLoses, blueWins, blueLoses, purpleWins, purpleLoses];
 }
 
-var timeSpentPlaying = function(summoner) {
+var timeSpentPlaying = function(summoner, champion) {
     var totalTime = 0;
-    var games = 0;
-    for (var champion in summonerDatabase[summoner]) {
+    
+    if (champion) {
         for (var key in summonerDatabase[summoner][champion]) {
             var gameObject = gameDatabase[summonerDatabase[summoner][champion][key]];
             if (gameObject["time"] && (gameObject["blue"][summonerName] || gameObject["purple"][summonerName])) {
                 totalTime = totalTime+gameDatabase[summonerDatabase[summoner][champion][key]]["time"];
-                games++;
+            }
+        }
+    } else {
+        for (var champ in summonerDatabase[summoner]) {
+            for (var key in summonerDatabase[summoner][champ]) {
+                var gameObject = gameDatabase[summonerDatabase[summoner][champ][key]];
+                if (gameObject["time"] && (gameObject["blue"][summonerName] || gameObject["purple"][summonerName])) {
+                    totalTime = totalTime+gameDatabase[summonerDatabase[summoner][champ][key]]["time"];
+                }
             }
         }
     }
     return totalTime;
 }
 
-var summonersPlayedWith = function() {
+var getSummonerName = function() {
     var summonerFrequency = {};
     for (var summoner in summonerDatabase) {
         summonerFrequency[summoner] = 0;
@@ -120,7 +135,25 @@ var summonersPlayedWith = function() {
         return a < b ? 1 : (a > b ? -1:0);
     });
     summonerName = frequencyInOrder.shift()[0];
-    frequencyDatabase = frequencyInOrder;
+    summonersPlayedWith();
+}
+
+var summonersPlayedWith = function(summoner) {
+    var summonerFrequency = {};
+    for (var summoner in summonerDatabase) {
+        var rates = getRates(summoner);
+        summonerFrequency[summoner] = rates[0]+rates[1];
+    }
+    var frequencyInOrder = []
+    for (var key in summonerFrequency) frequencyInOrder.push([key, summonerFrequency[key]]);
+    frequencyInOrder.sort(function(a, b) {
+        a = a[1];
+        b = b[1];
+        
+        return a < b ? 1 : (a > b ? -1:0);
+    });
+    frequencyInOrder.shift();
+    summonerFrequencyDatabase = frequencyInOrder;
 }
 
 var championsPlayedWith = function(summoner) {
@@ -238,12 +271,16 @@ var processFile = function(fileEntry) {
 var progressInterval;
 
 var displayProgress = function() {
-    var percent = Math.ceil((processProgress/numOfFiles)/1.333333*1000-0.5)/10;
+    var percent = Math.ceil((processProgress/numOfFiles)*1000-0.5)/10;
     $("#progress-cover").width(percent.toString()+"%");
     $("#drop-sub").text("Progress: "+percent.toString()+"%");
     if (percent >= 75) {
         clearInterval(progressInterval);   
-        summonersPlayedWith();
+        getSummonerName();
+        displayAllStats();
+        $("#main, #title").hide();
+        $("#drop-cover").removeClass("show")
+        $("#stats").show();
     }
 }
 
@@ -307,6 +344,9 @@ processTest = function(files) {
         } else {
             entry = files[i];
         }
+        
+        if (!entry) processFailure("You didn't drop a folder!"); return;
+        
         if (entry.isFile && i == 0) {
             if (processFile(entry)) {
                 processProgress = 0;
@@ -341,9 +381,9 @@ processTest = function(files) {
 }
 
 var resetDatabase = function() {
-    gameDatabase = {}
-    summonerDatabase = {}
-    frequencyDatabase = []
+    gameDatabase = {};
+    summonerDatabase = {};
+    summonerFrequencyDatabase = {};
     summonerName = null;
     gameStats = {
         "time": 0,

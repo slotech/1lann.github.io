@@ -1,6 +1,5 @@
-/* Debugging */
-#main, #drop-cover, #title {
-    display: none !important;
+#stats {
+    display: none;
 }
 
 .container {
