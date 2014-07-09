@@ -273,8 +273,8 @@ var progressInterval;
 var displayProgress = function() {
     var percent = Math.ceil((processProgress/numOfFiles)*1000-0.5)/10;
     $("#progress-cover").width(percent.toString()+"%");
-    $("#drop-sub").text("Progress: "+percent.toString()+"%");
-    if (percent >= 75) {
+    $("#drop-sub").text("Progress: "+percent.toString()+"%" + " (" + numOfFiles.toString() + " files)");
+    if (percent >= 100) {
         clearInterval(progressInterval);   
         getSummonerName();
         displayAllStats();
@@ -289,7 +289,7 @@ var busy = false;
 var folderProcessStack = [];
 var folderProcessInterval;
 
-var processTest;
+var processData;
 
 var processFolders = function() {
     if (!busy) {
@@ -302,7 +302,7 @@ var processFolders = function() {
             var readEntries = function() {
                 dirReader.readEntries (function(results) {
                     if (!results.length) {
-                        processTest(entries);
+                        processData(entries);
                         return;
                     } else {
                         entries = entries.concat(toArray(results));
@@ -317,11 +317,11 @@ var processFolders = function() {
             folderProcessInterval = null;
         }
     } else {
-        console.log("skipping");
+
     }
 }
 
-processTest = function(files) {
+processData = function(files) {
     if (correctDirectory) {
         return;   
     }
@@ -345,7 +345,10 @@ processTest = function(files) {
             entry = files[i];
         }
         
-        if (!entry) processFailure("You didn't drop a folder!"); return;
+        if (!entry) {
+            processFailure("You didn't drop a folder!");
+            return;
+        }
         
         if (entry.isFile && i == 0) {
             if (processFile(entry)) {
@@ -374,7 +377,6 @@ processTest = function(files) {
     }
     busy = false;
     if (folderProcessStack.length <= 0 && !correctDirectory) {
-        console.log("Could not find files"); 
         files = null;
         processFailure("Could not find logs - Try again");
     }

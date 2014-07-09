@@ -50,7 +50,7 @@ document.ondrop = function(e) {
     
     setTimeout(changeTextTimeout, 250);
     correctDirectory = false;
-    processTest(e.dataTransfer.items);
+    processData(e.dataTransfer.items);
     e.dataTransfer = null;
 }
 
