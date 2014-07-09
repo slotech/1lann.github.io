@@ -55,13 +55,13 @@ var getRates = function(summoner, champion) {
         for (var champion in summonerDatabase[summoner]) {
             for (var key in summonerDatabase[summoner][champion]) {
                 var gameObject = gameDatabase[summonerDatabase[summoner][champion][key]];
-                if (gameObject["blue"][summonerName]) {
+                if (gameObject["blue"][summonerName] && gameObject["blue"][summoner]) {
                     if (gameObject["result"] == "win") {
                         blueWins++;
                     } else {
                         blueLoses++;
                     }
-                } else if (gameObject["purple"][summonerName]) {
+                } else if (gameObject["purple"][summonerName] && gameObject["purple"][summoner]) {
                     if (gameObject["result"] == "win") {
                         purpleWins++;
                     } else {
@@ -74,13 +74,13 @@ var getRates = function(summoner, champion) {
     } else {
         for (var key in summonerDatabase[summoner][champion]) {
             var gameObject = gameDatabase[summonerDatabase[summoner][champion][key]];
-            if (gameObject["blue"][summonerName]) {
+            if (gameObject["blue"][summonerName] && gameObject["blue"][summoner]) {
                 if (gameObject["result"] == "win") {
                     blueWins++;
                 } else {
                     blueLoses++;
                 }
-            } else if (gameObject["purple"][summonerName]) {
+            } else if (gameObject["purple"][summonerName] && gameObject["purple"][summoner]) {
                 if (gameObject["result"] == "win") {
                     purpleWins++;
                 } else {

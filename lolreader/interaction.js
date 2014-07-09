@@ -33,8 +33,9 @@ $(document).bind('dragover', function (e) {
 });
 
 document.ondrop = function(e) {
-    processLock = true;
     e.preventDefault();
+    if (processLock) return;
+    processLock = true;
 
 	dropZone.addClass("show");
     cancelAnimateOut = true;

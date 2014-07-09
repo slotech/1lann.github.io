@@ -232,7 +232,12 @@ var expandPlayer = function(player) {
     for (key in topChampions) {
         var rates = getRates(player, topChampions[key]);
         var winrate = getPercentage(rates[0], rates[1]);
-        $("#played-with-data .info-card[cardid='" + attributeString(player) + "'] .summoner-top-champions").append('<img src="http://ddragon.leagueoflegends.com/cdn/4.10.7/img/champion/' + topChampions[key] + '.png" alt="' + topChampions[key] + '"><span class="champion-name">' + getProperName(topChampions[key]) + '</span><span class="champion-winrate">' + winrate.toString() + '% Winrate</span><br>')
+        var enemy = "% Winrate"
+        if (!(winrate >= 0)) {
+            winrate = "Enemy "
+            enemy = "only"
+        }
+        $("#played-with-data .info-card[cardid='" + attributeString(player) + "'] .summoner-top-champions").append('<img src="http://ddragon.leagueoflegends.com/cdn/4.10.7/img/champion/' + topChampions[key] + '.png" alt="' + topChampions[key] + '"><span class="champion-name">' + getProperName(topChampions[key]) + '</span><span class="champion-winrate">' + winrate.toString() + enemy+ '</span><br>')
     }
     
     detailsContainer.slideDown();
@@ -267,8 +272,15 @@ var drawPlayersList = function(searchTerm, expanded) {
         if (key >= 20) break;
         var rates = getRates(resultDatabase[key][0]);
         var winrate = getPercentage(rates[0],rates[1]);
+        var enemy = "Winrate"
+        if (!(winrate >= 0)) {
+            winrate = "Enemy";
+            enemy = "only";
+        } else {
+            winrate = winrate.toString() + "%"
+        }
         var region = getRegion(resultDatabase[key][0]);
-        var card = '<div class="info-card" cardid=' + attributeString(resultDatabase[key][0]) + '><div class="main-area"><img src="http://avatar.leagueoflegends.com/' + region + '/' + resultDatabase[key][0] + '.png" alt="'+ resultDatabase[key][0] + '"><div class="left-section"><span class="name">' + resultDatabase[key][0] + '</span><br><span class="games-played">' + resultDatabase[key][1] + ' games played</span></div><div class="win-rate"><span class="win-percent">' + winrate + '%</span><br><span class="win-rate-text">Winrate</span></div></div><div class="details-area"><div class="details-container" style="display:none;"></div></div><div class="expand-area"><span class="glyphicon glyphicon-chevron-down"></span></div></div>'
+        var card = '<div class="info-card" cardid=' + attributeString(resultDatabase[key][0]) + '><div class="main-area"><img src="http://avatar.leagueoflegends.com/' + region + '/' + resultDatabase[key][0] + '.png" alt="'+ resultDatabase[key][0] + '"><div class="left-section"><span class="name">' + resultDatabase[key][0] + '</span><br><span class="games-played">' + resultDatabase[key][1] + ' games played together</span></div><div class="win-rate"><span class="win-percent">' + winrate + '</span><br><span class="win-rate-text">' + enemy + '</span></div></div><div class="details-area"><div class="details-container" style="display:none;"></div></div><div class="expand-area"><span class="glyphicon glyphicon-chevron-down"></span></div></div>'
         $("#played-with-data").append(card);
         
         var clickFunction = new Function('if ($("#played-with-data .info-card[cardid=\'' + attributeString(resultDatabase[key][0]) + '\'] .expand-area .glyphicon.glyphicon-chevron-down").length) {expandPlayer("' + resultDatabase[key][0] + '");} else {collapsePlayer("' + resultDatabase[key][0] + '");}');
