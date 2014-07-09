@@ -42,17 +42,25 @@ var getRegion = function(summoner) {
 }
 
 var getRates = function(summoner, champion) {
-    var wins = 0;
-    var loses = 0;
+    var blueWins = 0;
+    var blueLoses = 0;
+    var purpleWins = 0;
+    var purpleLoses = 0;
     if (!champion) {
         for (var champion in summonerDatabase[summoner]) {
             for (var key in summonerDatabase[summoner][champion]) {
                 var gameObject = gameDatabase[summonerDatabase[summoner][champion][key]];
-                if (gameObject["blue"][summonerName] || gameObject["purple"][summonerName]) {
+                if (gameObject["blue"][summonerName]) {
                     if (gameObject["result"] == "win") {
-                        wins++;
+                        blueWins++;
                     } else {
-                        loses++;
+                        blueLoses++;
+                    }
+                } else if (gameObject["purple"][summonerName]) {
+                    if (gameObject["result"] == "win") {
+                        purpleWins++;
+                    } else {
+                        purpleLoses++;
                     }
                 }
             }
@@ -60,16 +68,22 @@ var getRates = function(summoner, champion) {
     } else {
         for (var key in summonerDatabase[summoner][champion]) {
             var gameObject = gameDatabase[summonerDatabase[summoner][champion][key]];
-            if (gameObject["blue"][summonerName] || gameObject["purple"][summonerName]) {
+            if (gameObject["blue"][summonerName]) {
                 if (gameObject["result"] == "win") {
-                    wins++;
+                    blueWins++;
                 } else {
-                    loses++;
+                    blueLoses++;
+                }
+            } else if (gameObject["purple"][summonerName]) {
+                if (gameObject["result"] == "win") {
+                    purpleWins++;
+                } else {
+                    purpleLoses++;
                 }
             }
         }
     }
-    return [wins+loses, wins, loses, Math.ceil((wins/(loses+wins))*1000-0.5)/10];
+    return [blueWins+purpleWins, blueLoses+purpleLoses, blueWins, blueLoses, purpleWins, purpleLoses];
 }
 
 var timeSpentPlaying = function(summoner) {
