@@ -32,6 +32,15 @@ $(document).bind('dragover', function (e) {
 	e.preventDefault();
 });
 
+var processFailure = function(message) {
+    dropZone.removeClass("show");
+    $("#drop-it, #drop-sub").removeClass("show");
+    $("#step-number").text(message);
+    $("#step-number").css("font-size", "60px");
+    $("#step-number").css("color", "#bc3a3a");
+    processLock = false;
+}
+
 document.ondrop = function(e) {
     e.preventDefault();
     if (processLock) return;
@@ -51,15 +60,12 @@ document.ondrop = function(e) {
     
     setTimeout(changeTextTimeout, 250);
     correctDirectory = false;
-    processData(e.dataTransfer.items);
+    try {
+        processData(e.dataTransfer.items);
+    } catch(err) {
+        processFailure("It seems like you're using an unsupported browser");
+        $("#instructions").text("Try using a different browser (Google Chrome) instead");
+        console.log(err)
+    }
     e.dataTransfer = null;
-}
-
-var processFailure = function(message) {
-    dropZone.removeClass("show");
-    $("#drop-it, #drop-sub").removeClass("show");
-    $("#step-number").text(message);
-    $("#step-number").css("font-size", "60px");
-    $("#step-number").css("color", "#bc3a3a");
-    processLock = false;
 }
