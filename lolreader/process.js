@@ -148,7 +148,7 @@ var summonersPlayedWith = function(summoner) {
     var summonerFrequency = {};
     for (var summoner in summonerDatabase) {
         var rates = getRates(summoner);
-        summonerFrequency[summoner] = rates[0]+rates[1];
+        summonerFrequency[summoner] = rates[0];
     }
     var frequencyInOrder = []
     for (var key in summonerFrequency) frequencyInOrder.push([key, summonerFrequency[key]]);
