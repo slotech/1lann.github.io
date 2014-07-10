@@ -86,6 +86,8 @@
     background-color: #ffffff;
     height: 117px;
     line-height: 23px;
+    position: relative;
+    top: 1px;
 }
 
 .info-card .expand-area {
@@ -141,6 +143,7 @@
     border-left: 1px solid #a6a6a6;
     border-right: 1px solid #a6a6a6;
     border-bottom: 1px solid #a6a6a6;
+    position: relative;
     font-size: 20px;
 }
 
