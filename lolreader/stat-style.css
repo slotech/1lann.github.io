@@ -172,6 +172,8 @@
 }
 
 .info-card .summoner-top-champions .champion-name {
+    position: relative;
+    top: 3px;
     margin-left: 10px;
     font-weight: 300;
     font-size: 23px;
