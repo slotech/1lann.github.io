@@ -51,20 +51,21 @@ var getRates = function(summoner, champion) {
     var blueLoses = 0;
     var purpleWins = 0;
     var purpleLoses = 0;
-    var totalGames = 0;
+    var blueGames = 0;
+    var purpleGames = 0;
     if (!champion) {
         for (var champion in summonerDatabase[summoner]) {
             for (var key in summonerDatabase[summoner][champion]) {
                 var gameObject = gameDatabase[summonerDatabase[summoner][champion][key]];
                 if (gameObject["blue"][summonerName] && gameObject["blue"][summoner]) {
-                    totalGames++;
+                    blueGames++;
                     if (gameObject["result"] == "win") {
                         blueWins++;
                     } else if (gameObject["result"] == "lose") {
                         blueLoses++;
                     }
                 } else if (gameObject["purple"][summonerName] && gameObject["purple"][summoner]) {
-                    totalGames++;
+                    purpleGames++;
                     if (gameObject["result"] == "win") {
                         purpleWins++;
                     } else if (gameObject["result"] == "lose") {
@@ -72,20 +73,20 @@ var getRates = function(summoner, champion) {
                     }
                 }
             }
-            ratesCache[summoner] = [totalGames, blueWins+purpleWins, blueLoses+purpleLoses, blueWins, blueLoses, purpleWins, purpleLoses];
+            ratesCache[summoner] = [blueGames+purpleGames, blueWins+purpleWins, blueLoses+purpleLoses, blueGames, purpleGames, blueWins, blueLoses, purpleWins, purpleLoses];
         }
     } else {
         for (var key in summonerDatabase[summoner][champion]) {
             var gameObject = gameDatabase[summonerDatabase[summoner][champion][key]];
             if (gameObject["blue"][summonerName] && gameObject["blue"][summoner]) {
-                totalGames++;
+                blueGames++;
                 if (gameObject["result"] == "win") {
                     blueWins++;
                 } else if (gameObject["result"] == "lose") {
                     blueLoses++;
                 }
             } else if (gameObject["purple"][summonerName] && gameObject["purple"][summoner]) {
-                totalGames++;
+                purpleGames++;
                 if (gameObject["result"] == "win") {
                     purpleWins++;
                 } else if (gameObject["result"] == "lose") {
@@ -93,9 +94,9 @@ var getRates = function(summoner, champion) {
                 }
             }
         }
-        ratesCache[summoner+":"+champion] = [totalGames, blueWins+purpleWins, blueLoses+purpleLoses, blueWins, blueLoses, purpleWins, purpleLoses];
+        ratesCache[summoner+":"+champion] = [blueGames+purpleGames, blueWins+purpleWins, blueLoses+purpleLoses, blueGames, purpleGames, blueWins, blueLoses, purpleWins, purpleLoses];
     }
-    return [totalGames, blueWins+purpleWins, blueLoses+purpleLoses, blueWins, blueLoses, purpleWins, purpleLoses];
+    return [blueGames+purpleGames, blueWins+purpleWins, blueLoses+purpleLoses, blueGames, purpleGames, blueWins, blueLoses, purpleWins, purpleLoses];
 }
 
 var timeSpentPlaying = function(summoner, champion) {

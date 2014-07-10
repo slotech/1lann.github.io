@@ -80,11 +80,11 @@ var drawGeneralStats = function() {
     dataToDrawLeft.push(["Time wasted on loading: ", loadingHours]);
     dataToDrawLeft.push(["Win rate: ", getPercentage(rates[1],rates[2]).toString() + "%"]);
     dataToDrawLeft.push(["Average game time: ", averageMinutes]);
-    dataToDrawLeft.push(["Percentage of games on blue: ", getPercentage(rates[1]+rates[2],rates[3]+rates[4]).toString() + "%"]);
-    dataToDrawRight.push(["Games on blue side: ", (rates[3]+rates[4]).toString()]);
-    dataToDrawRight.push(["Games on purple side: ", (rates[5]+rates[6]).toString()]);
-    dataToDrawRight.push(["Blue win rate: ", getPercentage(rates[3],rates[4]).toString() + "%"]);
-    dataToDrawRight.push(["Purple win rate: ", getPercentage(rates[5], rates[6]).toString() + "%"]);
+    dataToDrawLeft.push(["Percentage of games on blue: ", getPercentage(rates[3],rates[3]+rates[4]).toString() + "%"]);
+    dataToDrawRight.push(["Games on blue side: ", (rates[3]).toString()]);
+    dataToDrawRight.push(["Games on purple side: ", (rates[4]).toString()]);
+    dataToDrawRight.push(["Blue win rate: ", getPercentage(rates[5],rates[6]).toString() + "%"]);
+    dataToDrawRight.push(["Purple win rate: ", getPercentage(rates[7], rates[8]).toString() + "%"]);
     dataToDrawRight.push(["Unique players encountered: ", Object.keys(summonerDatabase).length.toString()])
     
     for (key in dataToDrawLeft) {
@@ -119,10 +119,10 @@ var expandChampion = function(champion) {
                      getPercentage(rates[0], totalRates[0]) + "%"]);
     dataToDraw.push(["Games known won: ", rates[1].toString()]);
     dataToDraw.push(["Games known lost: ", rates[2].toString()]);
-    dataToDraw.push(["Games played on blue side: ", (rates[3]+rates[4]).toString()]);
-    dataToDraw.push(["Games played on purple side: ", (rates[5]+rates[6]).toString()]);
-    dataToDraw.push(["Blue win rate: ", getPercentage(rates[3],rates[4]).toString() + "%"]);
-    dataToDraw.push(["Purple win rate: ", getPercentage(rates[5], rates[6]).toString() + "%"]);
+    dataToDraw.push(["Games played on blue side: ", (rates[3]).toString()]);
+    dataToDraw.push(["Games played on purple side: ", (rates[4]).toString()]);
+    dataToDraw.push(["Blue win rate: ", getPercentage(rates[5],rates[6]).toString() + "%"]);
+    dataToDraw.push(["Purple win rate: ", getPercentage(rates[7], rates[8]).toString() + "%"]);
     
     for (key in dataToDraw) {
         detailsContainer.append('<span class="stat-text">' + dataToDraw[key][0] + '</span><span class="actual-stat">' + dataToDraw[key][1] + '</span><br>');
