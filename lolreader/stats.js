@@ -80,7 +80,7 @@ var drawGeneralStats = function() {
     dataToDrawLeft.push(["Time wasted on loading: ", loadingHours]);
     dataToDrawLeft.push(["Win rate: ", getPercentage(rates[1],rates[2]).toString() + "%"]);
     dataToDrawLeft.push(["Average game time: ", averageMinutes]);
-    dataToDrawLeft.push(["Percentage of games on blue: ", getPercentage(rates[3],rates[3]+rates[4]).toString() + "%"]);
+    dataToDrawLeft.push(["Percentage of games on blue: ", getPercentage(rates[3],rates[4]).toString() + "%"]);
     dataToDrawRight.push(["Games on blue side: ", (rates[3]).toString()]);
     dataToDrawRight.push(["Games on purple side: ", (rates[4]).toString()]);
     dataToDrawRight.push(["Blue win rate: ", getPercentage(rates[5],rates[6]).toString() + "%"]);
@@ -116,7 +116,7 @@ var expandChampion = function(champion) {
     dataToDraw.push(["Time played: ", getHumanTime(timePlayed)]);
     dataToDraw.push(["Average game time: ", averageMinutes]);
     dataToDraw.push(["Percentage of games played: ",
-                     getPercentage(rates[0], totalRates[0]) + "%"]);
+                     getPercentage(rates[0], totalRates[0]-rates[0]) + "%"]);
     dataToDraw.push(["Games known won: ", rates[1].toString()]);
     dataToDraw.push(["Games known lost: ", rates[2].toString()]);
     dataToDraw.push(["Games played on blue side: ", (rates[3]).toString()]);
@@ -218,7 +218,7 @@ var expandPlayer = function(player) {
     dataToDraw.push(["Region: ", region.toUpperCase()]);
     dataToDraw.push(["Time played together: ", getHumanTime(timePlayed)]);
     dataToDraw.push(["Percentage of games played together: ",
-                     getPercentage(rates[0], totalRates[0]) + "%"]);
+                     getPercentage(rates[0], totalRates[0]-rates[0]) + "%"]);
     dataToDraw.push(["Games known won together: ", rates[1].toString()]);
     dataToDraw.push(["Games known lost together: ", rates[2].toString()]);
     

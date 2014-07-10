@@ -182,6 +182,7 @@ var championsPlayedWith = function(summoner) {
 
 var fileNameRegex = /(\d{4}).(\d{2}).(\d{2}).(\d{2}).(\d{2}).(\d{2}).r3dlog\.txt$/
 var playersRegex = /Spawning champion \(([^\)]+)\) with skinID \d+ on team (\d)00 for clientID \d and summonername \(([^\)]+)\) \(is HUMAN PLAYER\)/g
+var altPlayerRegex = /Hero ([^(]+).+ created for (.+)/g
 var gameEndTimeRegex = /^(\d+\.\d+).+{"messageType":"riot__game_client__connection_info","message_body":"Game exited","exit_code":"EXITCODE_([^"]+)"}$/m
 var altGameEndRegex = /^(\d+\.\d+).+Game exited$/m
 var gameStartTimeRegex= /^(\d+\.\d+).+GAMESTATE_GAMELOOP Begin$/m
@@ -206,12 +207,14 @@ var processFile = function(fileEntry) {
             reader.onloadend = function(e) {
                 var gameDataConstruct = {};
                 var logData = this.result;
-                var errors = 0;
                 
                 var gameID = gameIDRegex.exec(logData);
                 var dateTime = fileNameRegex.exec(fileEntry.name);
                 gameDataConstruct["date"] = dateTime[1]+"/"+dateTime[2]+"/"+dateTime[3]+" "+
                     dateTime[4]+":"+dateTime[5]+":"+dateTime[6];
+                if (!gameID) {
+                    gameID = [null, gameDataConstruct["date"], "unknown"];
+                }
                 var gameEnd = gameEndTimeRegex.exec(logData);
                 var gameEndTime;
                 if (gameEnd) {
@@ -222,8 +225,6 @@ var processFile = function(fileEntry) {
                     var altEndGame = altGameEndRegex.exec(logData);
                     if (altEndGame) {
                         gameEndTime = parseFloat(altEndGame[1]);
-                    } else {
-                        errors++;
                     }
                 }
                 var gameStart = gameStartTimeRegex.exec(logData);
@@ -239,7 +240,6 @@ var processFile = function(fileEntry) {
                 } else {
                     gameDataConstruct["time"] = 0;
                     gameDataConstruct["loading-time"] = 0;
-                    errors++;
                 }
                 var gameType = gameTypeRegex.exec(logData);
                 if (gameType) {
@@ -247,7 +247,7 @@ var processFile = function(fileEntry) {
                 } else {
                     gameDataConstruct["type"] = "unknown";
                 }
-                if (errors <= 1 && gameID) {
+                if (logData.indexOf("Creating Hero...") > 0) {
                     gameDataConstruct["blue"] = {};
                     gameDataConstruct["purple"] = {};
                     while (player = playersRegex.exec(logData)) {
@@ -259,6 +259,22 @@ var processFile = function(fileEntry) {
                         if (!summonerDatabase[player[3]]) summonerDatabase[player[3]] = {};
                         if (!summonerDatabase[player[3]][player[1]]) summonerDatabase[player[3]][player[1]] = [];
                         pushIfNotPresent(summonerDatabase[player[3]][player[1]], gameID[1]);
+                    }
+                    if (Object.keys(gameDataConstruct["blue"]).length+Object.keys(gameDataConstruct["purple"]).length <= 0) {
+                        var teamIndex = 0;
+                        while (player = altPlayerRegex.exec(logData)) {
+                            teamIndex++;
+                            if (teamIndex > 5) {
+                                // Purple
+                                gameDataConstruct["purple"][player[2]] = player[1];
+                            } else {
+                                // Blue
+                                gameDataConstruct["blue"][player[2]] = player[1];
+                            }
+                            if (!summonerDatabase[player[2]]) summonerDatabase[player[2]] = {};
+                            if (!summonerDatabase[player[2]][player[1]]) summonerDatabase[player[2]][player[1]] = [];
+                            pushIfNotPresent(summonerDatabase[player[2]][player[1]], gameID[1]);
+                        }
                     }
                     gameDataConstruct["region"] = gameID[2].toLowerCase();
                     if (gameDataConstruct["region"] == "oc") {
@@ -288,6 +304,10 @@ var displayProgress = function() {
     $("#drop-sub").text("Progress: "+percent.toString()+"%" + " (" + numOfFiles.toString() + " files)");
     if (percent >= 100) {
         clearInterval(progressInterval);   
+        if (Object.keys(gameDatabase).length <= 0) {
+            processFailure("No usable logs available!")
+            return;
+        }
         getSummonerName();
         displayAllStats();
         $("#main, #title").hide();
