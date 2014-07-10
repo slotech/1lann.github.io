@@ -72,19 +72,19 @@ var drawGeneralStats = function() {
     // return [wins, loses, blueWins, blueLoses, purpleWins, purpleLoses];
     var timeSeconds = timeSpentPlaying(summonerName);
     var gameHours = getHumanTime(timeSeconds);
-    var averageMinutes = getHumanTime(timeSeconds/(rates[0]+rates[1]));
+    var averageMinutes = getHumanTime(timeSeconds/(rates[0]));
     var loadingHours = getHumanTime(gameStats["loading"]);
     console.log("hours: ",gameHours)
-    dataToDrawLeft.push(["Number of games: ", (rates[0] + rates[1]).toString()]);
+    dataToDrawLeft.push(["Number of games: ", (rates[0]).toString()]);
     dataToDrawLeft.push(["Time spent playing: ", gameHours]);
     dataToDrawLeft.push(["Time wasted on loading: ", loadingHours]);
-    dataToDrawLeft.push(["Win rate: ", getPercentage(rates[0],rates[1]).toString() + "%"]);
+    dataToDrawLeft.push(["Win rate: ", getPercentage(rates[1],rates[2]).toString() + "%"]);
     dataToDrawLeft.push(["Average game time: ", averageMinutes]);
-    dataToDrawLeft.push(["Percentage of games on blue: ", getPercentage(rates[2]+rates[3],rates[4]+rates[5]).toString() + "%"]);
-    dataToDrawRight.push(["Games on blue side: ", (rates[2]+rates[3]).toString()]);
-    dataToDrawRight.push(["Games on purple side: ", (rates[4]+rates[5]).toString()]);
-    dataToDrawRight.push(["Blue win rate: ", getPercentage(rates[2],rates[3]).toString() + "%"]);
-    dataToDrawRight.push(["Purple win rate: ", getPercentage(rates[4], rates[5]).toString() + "%"]);
+    dataToDrawLeft.push(["Percentage of games on blue: ", getPercentage(rates[1]+rates[2],rates[3]+rates[4]).toString() + "%"]);
+    dataToDrawRight.push(["Games on blue side: ", (rates[1]+rates[2]).toString()]);
+    dataToDrawRight.push(["Games on purple side: ", (rates[3]+rates[4]).toString()]);
+    dataToDrawRight.push(["Blue win rate: ", getPercentage(rates[1],rates[2]).toString() + "%"]);
+    dataToDrawRight.push(["Purple win rate: ", getPercentage(rates[3], rates[4]).toString() + "%"]);
     dataToDrawRight.push(["Unique players encountered: ", Object.keys(summonerDatabase).length.toString()])
     
     for (key in dataToDrawLeft) {
@@ -112,17 +112,17 @@ var expandChampion = function(champion) {
     var timePlayed = timeSpentPlaying(summonerName, champion);
     var rates = getRates(summonerName, champion);
     var totalRates = getRates(summonerName);
-    var averageMinutes = getHumanTime(timePlayed/(rates[0]+rates[1]));
+    var averageMinutes = getHumanTime(timePlayed/(rates[0]));
     dataToDraw.push(["Time played: ", getHumanTime(timePlayed)]);
     dataToDraw.push(["Average game time: ", averageMinutes]);
     dataToDraw.push(["Percentage of games played: ",
-                     getPercentage(rates[0] + rates[1], totalRates[0] + totalRates[1]) + "%"]);
-    dataToDraw.push(["Games won: ", rates[0].toString()]);
-    dataToDraw.push(["Games lost: ", rates[1].toString()]);
-    dataToDraw.push(["Games played on blue side: ", (rates[2]+rates[3]).toString()]);
-    dataToDraw.push(["Games played on purple side: ", (rates[4]+rates[5]).toString()]);
-    dataToDraw.push(["Blue win rate: ", getPercentage(rates[2],rates[3]).toString() + "%"]);
-    dataToDraw.push(["Purple win rate: ", getPercentage(rates[4], rates[5]).toString() + "%"]);
+                     getPercentage(rates[0], totalRates[0]) + "%"]);
+    dataToDraw.push(["Games won: ", rates[1].toString()]);
+    dataToDraw.push(["Games lost: ", rates[2].toString()]);
+    dataToDraw.push(["Games played on blue side: ", (rates[3]+rates[4]).toString()]);
+    dataToDraw.push(["Games played on purple side: ", (rates[5]+rates[6]).toString()]);
+    dataToDraw.push(["Blue win rate: ", getPercentage(rates[3],rates[4]).toString() + "%"]);
+    dataToDraw.push(["Purple win rate: ", getPercentage(rates[5], rates[6]).toString() + "%"]);
     
     for (key in dataToDraw) {
         detailsContainer.append('<span class="stat-text">' + dataToDraw[key][0] + '</span><span class="actual-stat">' + dataToDraw[key][1] + '</span><br>');
@@ -159,7 +159,7 @@ var drawChampionsList = function(searchTerm, expanded) {
     for (key in resultDatabase) {
         if (key >= 20) break;
         var rates = getRates(summonerName, resultDatabase[key][0]);
-        var winrate = getPercentage(rates[0],rates[1])
+        var winrate = getPercentage(rates[1],rates[2])
         var card = '<div class="info-card" cardid=' + resultDatabase[key][0] + '><div class="main-area"><img src="http://ddragon.leagueoflegends.com/cdn/4.10.7/img/champion/' + resultDatabase[key][0] + '.png" alt="'+ resultDatabase[key][0] + '"><div class="left-section"><span class="name">' + getProperName(resultDatabase[key][0]) + '</span><br><span class="games-played">' + resultDatabase[key][1] + ' games played</span></div><div class="win-rate"><span class="win-percent">' + winrate + '%</span><br><span class="win-rate-text">Winrate</span></div></div><div class="details-area"><div class="details-container" style="display:none;"></div></div><div class="expand-area"><span class="glyphicon glyphicon-chevron-down"></span></div></div>'
         $("#most-played-data").append(card);
         
@@ -178,7 +178,7 @@ var getTopChampions = function(player) {
     var championsPlayed = [];
     for (var champion in summonerDatabase[player]) {
         var rates = getRates(player, champion);
-        championsPlayed.push([champion, rates[0]+rates[1]]);
+        championsPlayed.push([champion, rates[0]]);
     }
     
     championsPlayed.sort(function(a, b) {
@@ -214,13 +214,13 @@ var expandPlayer = function(player) {
     var timePlayed = timeSpentPlaying(player);
     var rates = getRates(player);
     var totalRates = getRates(summonerName);
-    var averageMinutes = getHumanTime(timePlayed/(rates[0]+rates[1]));
+    var averageMinutes = getHumanTime(timePlayed/(rates[0]));
     dataToDraw.push(["Region: ", region.toUpperCase()]);
     dataToDraw.push(["Time played together: ", getHumanTime(timePlayed)]);
     dataToDraw.push(["Percentage of games played together: ",
-                     getPercentage(rates[0] + rates[1], totalRates[0] + totalRates[1]) + "%"]);
-    dataToDraw.push(["Games won together: ", rates[0].toString()]);
-    dataToDraw.push(["Games lost together: ", rates[1].toString()]);
+                     getPercentage(rates[0], totalRates[0]) + "%"]);
+    dataToDraw.push(["Games won together: ", rates[1].toString()]);
+    dataToDraw.push(["Games lost together: ", rates[2].toString()]);
     
     for (key in dataToDraw) {
         detailsContainer.append('<span class="stat-text">' + dataToDraw[key][0] + '</span><span class="actual-stat">' + dataToDraw[key][1] + '</span><br>');
@@ -231,9 +231,9 @@ var expandPlayer = function(player) {
     
     for (key in topChampions) {
         var rates = getRates(player, topChampions[key]);
-        var winrate = getPercentage(rates[0], rates[1]);
+        var winrate = getPercentage(rates[1], rates[2]);
         var enemy = "% Winrate"
-        if (!(winrate >= 0)) {
+        if (!(rates[0] > 0)) {
             winrate = "Enemy "
             enemy = "only"
         }
@@ -271,9 +271,9 @@ var drawPlayersList = function(searchTerm, expanded) {
     for (key in resultDatabase) {
         if (key >= 20) break;
         var rates = getRates(resultDatabase[key][0]);
-        var winrate = getPercentage(rates[0],rates[1]);
+        var winrate = getPercentage(rates[1],rates[2]);
         var enemy = "Winrate"
-        if (!(winrate >= 0)) {
+        if (!(rates[0] > 0)) {
             winrate = "Enemy";
             enemy = "only";
         } else {

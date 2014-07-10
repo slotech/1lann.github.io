@@ -51,6 +51,7 @@ var getRates = function(summoner, champion) {
     var blueLoses = 0;
     var purpleWins = 0;
     var purpleLoses = 0;
+    var totalGames = 0;
     if (!champion) {
         for (var champion in summonerDatabase[summoner]) {
             for (var key in summonerDatabase[summoner][champion]) {
@@ -58,18 +59,20 @@ var getRates = function(summoner, champion) {
                 if (gameObject["blue"][summonerName] && gameObject["blue"][summoner]) {
                     if (gameObject["result"] == "win") {
                         blueWins++;
-                    } else {
+                    } else if (gameObject["result"] == "lose") {
                         blueLoses++;
                     }
+                    totalGames++;
                 } else if (gameObject["purple"][summonerName] && gameObject["purple"][summoner]) {
                     if (gameObject["result"] == "win") {
                         purpleWins++;
-                    } else {
+                    } else if (gameObject["result"] == "lose") {
                         purpleLoses++;
                     }
+                    totalGames++;
                 }
             }
-            ratesCache[summoner] = [blueWins+purpleWins, blueLoses+purpleLoses, blueWins, blueLoses, purpleWins, purpleLoses];
+            ratesCache[summoner] = [totalGames, blueWins+purpleWins, blueLoses+purpleLoses, blueWins, blueLoses, purpleWins, purpleLoses];
         }
     } else {
         for (var key in summonerDatabase[summoner][champion]) {
@@ -77,20 +80,22 @@ var getRates = function(summoner, champion) {
             if (gameObject["blue"][summonerName] && gameObject["blue"][summoner]) {
                 if (gameObject["result"] == "win") {
                     blueWins++;
-                } else {
+                } else if (gameObject["result"] == "lose") {
                     blueLoses++;
                 }
+                totalGames++;
             } else if (gameObject["purple"][summonerName] && gameObject["purple"][summoner]) {
                 if (gameObject["result"] == "win") {
                     purpleWins++;
-                } else {
+                } else if (gameObject["result"] == "lose") {
                     purpleLoses++;
                 }
+                totalGames++;
             }
         }
-        ratesCache[summoner+":"+champion] = [blueWins+purpleWins, blueLoses+purpleLoses, blueWins, blueLoses, purpleWins, purpleLoses];
+        ratesCache[summoner+":"+champion] = [totalGames, blueWins+purpleWins, blueLoses+purpleLoses, blueWins, blueLoses, purpleWins, purpleLoses];
     }
-    return [blueWins+purpleWins, blueLoses+purpleLoses, blueWins, blueLoses, purpleWins, purpleLoses];
+    return [totalGames, blueWins+purpleWins, blueLoses+purpleLoses, blueWins, blueLoses, purpleWins, purpleLoses];
 }
 
 var timeSpentPlaying = function(summoner, champion) {
@@ -177,6 +182,7 @@ var championsPlayedWith = function(summoner) {
 var fileNameRegex = /(\d{4}).(\d{2}).(\d{2}).(\d{2}).(\d{2}).(\d{2}).r3dlog\.txt$/
 var playersRegex = /Spawning champion \(([^\)]+)\) with skinID \d+ on team (\d)00 for clientID \d and summonername \(([^\)]+)\) \(is HUMAN PLAYER\)/g
 var gameEndTimeRegex = /^(\d+\.\d+).+{"messageType":"riot__game_client__connection_info","message_body":"Game exited","exit_code":"EXITCODE_([^"]+)"}$/m
+var altGameEndRegex = /^(\d+\.\d+).+Game exited$/m
 var gameStartTimeRegex= /^(\d+\.\d+).+GAMESTATE_GAMELOOP Begin$/m
 var gameTypeRegex = /Initializing GameModeComponents for mode=(\w+)\./
 var gameIDRegex = /Receiving PKT_World_SendGameNumber, GameID: ([^,]+), PlatformID: ([A-Z]+)/
@@ -211,8 +217,13 @@ var processFile = function(fileEntry) {
                     gameEndTime = parseFloat(gameEnd[1]);
                     gameDataConstruct["result"] = gameEnd[2].toLowerCase();
                 } else {
-                    errors++;
                     gameDataConstruct["result"] = "unknown";
+                    var altEndGame = altGameEndRegex.exec(logData);
+                    if (altEndGame) {
+                        gameEndTime = parseFloat(altEndGame[1]);
+                    } else {
+                        errors++;
+                    }
                 }
                 var gameStart = gameStartTimeRegex.exec(logData);
                 if (gameStart) {
@@ -234,7 +245,6 @@ var processFile = function(fileEntry) {
                     gameDataConstruct["type"] = gameType[1].toLowerCase();
                 } else {
                     gameDataConstruct["type"] = "unknown";
-                    errors++;
                 }
                 if (errors <= 1 && gameID) {
                     gameDataConstruct["blue"] = {};
@@ -358,7 +368,7 @@ processData = function(files) {
                 clearInterval(folderProcessInterval);
                 folderProcessInterval = null;
                 folderProcessStack = [];
-                if (numOfFiles >= 20) {
+                if (numOfFiles >= 1) {
                     correctDirectory = true;
                     progressInterval = setInterval(displayProgress, 200);
                 } else {
