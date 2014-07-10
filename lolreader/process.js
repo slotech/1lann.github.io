@@ -57,19 +57,19 @@ var getRates = function(summoner, champion) {
             for (var key in summonerDatabase[summoner][champion]) {
                 var gameObject = gameDatabase[summonerDatabase[summoner][champion][key]];
                 if (gameObject["blue"][summonerName] && gameObject["blue"][summoner]) {
+                    totalGames++;
                     if (gameObject["result"] == "win") {
                         blueWins++;
                     } else if (gameObject["result"] == "lose") {
                         blueLoses++;
                     }
-                    totalGames++;
                 } else if (gameObject["purple"][summonerName] && gameObject["purple"][summoner]) {
+                    totalGames++;
                     if (gameObject["result"] == "win") {
                         purpleWins++;
                     } else if (gameObject["result"] == "lose") {
                         purpleLoses++;
                     }
-                    totalGames++;
                 }
             }
             ratesCache[summoner] = [totalGames, blueWins+purpleWins, blueLoses+purpleLoses, blueWins, blueLoses, purpleWins, purpleLoses];
@@ -78,19 +78,19 @@ var getRates = function(summoner, champion) {
         for (var key in summonerDatabase[summoner][champion]) {
             var gameObject = gameDatabase[summonerDatabase[summoner][champion][key]];
             if (gameObject["blue"][summonerName] && gameObject["blue"][summoner]) {
+                totalGames++;
                 if (gameObject["result"] == "win") {
                     blueWins++;
                 } else if (gameObject["result"] == "lose") {
                     blueLoses++;
                 }
-                totalGames++;
             } else if (gameObject["purple"][summonerName] && gameObject["purple"][summoner]) {
+                totalGames++;
                 if (gameObject["result"] == "win") {
                     purpleWins++;
                 } else if (gameObject["result"] == "lose") {
                     purpleLoses++;
                 }
-                totalGames++;
             }
         }
         ratesCache[summoner+":"+champion] = [totalGames, blueWins+purpleWins, blueLoses+purpleLoses, blueWins, blueLoses, purpleWins, purpleLoses];
