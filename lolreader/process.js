@@ -174,7 +174,7 @@ var championsPlayedWith = function(summoner) {
     return frequencyInOrder;
 }
 
-var fileNameRegex = /(\d{4}-\d{2}-\d{2})T(\d{2}-\d{2})-\d{2}_r3dlog\.txt$/
+var fileNameRegex = /(\d{4}).(\d{2}).(\d{2}).(\d{2}).(\d{2}).(\d{2}).r3dlog\.txt$/
 var playersRegex = /Spawning champion \(([^\)]+)\) with skinID \d+ on team (\d)00 for clientID \d and summonername \(([^\)]+)\) \(is HUMAN PLAYER\)/g
 var gameEndTimeRegex = /^(\d+\.\d+).+{"messageType":"riot__game_client__connection_info","message_body":"Game exited","exit_code":"EXITCODE_([^"]+)"}$/m
 var gameStartTimeRegex= /^(\d+\.\d+).+GAMESTATE_GAMELOOP Begin$/m
@@ -203,7 +203,8 @@ var processFile = function(fileEntry) {
                 
                 var gameID = gameIDRegex.exec(logData);
                 var dateTime = fileNameRegex.exec(fileEntry.name);
-                gameDataConstruct["date"] = dateTime[1].replace(/-/g,"/")+" "+dateTime[2].replace("-",":");
+                gameDataConstruct["date"] = dateTime[1]+"/"+dateTime[2]+"/"+dateTime[3]+" "+
+                    dateTime[4]+":"+dateTime[5]+":"+dateTime[6];
                 var gameEnd = gameEndTimeRegex.exec(logData);
                 var gameEndTime;
                 if (gameEnd) {
