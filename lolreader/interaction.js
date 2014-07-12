@@ -63,9 +63,29 @@ document.ondrop = function(e) {
     try {
         processData(e.dataTransfer.items);
     } catch(err) {
-        processFailure("It seems like you're using an unsupported browser");
-        $("#instructions").text("Try using a different browser (Google Chrome) instead");
-        console.log(err)
+        var alternativeFiles = e.dataTransfer.files;
+        if (alternativeFiles) {
+            if (alternativeFiles[0].size > 0) {
+                if (fileNameRegex.exec(alternativeFiles[0].name)) {
+                    numOfFiles = alternativeFiles.length;
+                    progressInterval = setInterval(displayProgress, 200);
+                    for (i = 0; i < alternativeFiles.length; i++) {
+                        if (alternativeFiles[i].size > 0) {
+                            processFileObject(alternativeFiles[i], alternativeFiles[i].name);
+                        }
+                    }
+                } else {
+                    processFailure("Could not find logs - Try again");
+                }
+            } else {
+                processFailure("You need to drop the log files, not the folder!")
+                $("#instructions").text("This is because you're using a browser that doesn't support folder uploads. You can try using Google Chrome instead, which supports folder uploads.");
+            }
+        } else {
+            processFailure("It seems like you're using an unsupported browser");
+            $("#instructions").text("Try using a different browser (Google Chrome) instead");
+            console.log(err)
+        }
     }
     e.dataTransfer = null;
 }

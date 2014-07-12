@@ -199,96 +199,100 @@ var pushIfNotPresent = function(arr, data) {
     return true;
 }
 
+var processFileObject = function(file, fileName) {
+    var reader = new FileReader();
+    
+    reader.onloadend = function(e) {
+        var gameDataConstruct = {};
+        var logData = this.result;
+
+        var gameID = gameIDRegex.exec(logData);
+        var dateTime = fileNameRegex.exec(fileName);
+        gameDataConstruct["date"] = dateTime[1]+"/"+dateTime[2]+"/"+dateTime[3]+" "+
+            dateTime[4]+":"+dateTime[5]+":"+dateTime[6];
+        if (!gameID) {
+            gameID = [null, gameDataConstruct["date"], "unknown"];
+        }
+        var gameEnd = gameEndTimeRegex.exec(logData);
+        var gameEndTime;
+        if (gameEnd) {
+            gameEndTime = parseFloat(gameEnd[1]);
+            gameDataConstruct["result"] = gameEnd[2].toLowerCase();
+        } else {
+            gameDataConstruct["result"] = "unknown";
+            var altEndGame = altGameEndRegex.exec(logData);
+            if (altEndGame) {
+                gameEndTime = parseFloat(altEndGame[1]);
+            }
+        }
+        var gameStart = gameStartTimeRegex.exec(logData);
+        if (gameStart) {
+            var gameStartTime = parseFloat(gameStart[1]);
+            gameDataConstruct["loading-time"] = gameStartTime;
+            gameStats["loading"] = gameStats["loading"]+gameDataConstruct["loading-time"]
+            if (gameEndTime) {
+                gameDataConstruct["time"] = gameEndTime-gameStartTime;
+            } else {
+                gameDataConstruct["time"] = 0;   
+            }
+        } else {
+            gameDataConstruct["time"] = 0;
+            gameDataConstruct["loading-time"] = 0;
+        }
+        var gameType = gameTypeRegex.exec(logData);
+        if (gameType) {
+            gameDataConstruct["type"] = gameType[1].toLowerCase();
+        } else {
+            gameDataConstruct["type"] = "unknown";
+        }
+        if (logData.indexOf("Creating Hero...") > 0) {
+            gameDataConstruct["blue"] = {};
+            gameDataConstruct["purple"] = {};
+            while (player = playersRegex.exec(logData)) {
+                if (player[2] == "1") {
+                    gameDataConstruct["blue"][player[3]] = player[1];
+                } else {
+                    gameDataConstruct["purple"][player[3]] = player[1];
+                }
+                if (!summonerDatabase[player[3]]) summonerDatabase[player[3]] = {};
+                if (!summonerDatabase[player[3]][player[1]]) summonerDatabase[player[3]][player[1]] = [];
+                pushIfNotPresent(summonerDatabase[player[3]][player[1]], gameID[1]);
+            }
+            if (Object.keys(gameDataConstruct["blue"]).length+Object.keys(gameDataConstruct["purple"]).length <= 0) {
+                var teamIndex = 0;
+                while (player = altPlayerRegex.exec(logData)) {
+                    teamIndex++;
+                    if (teamIndex > 5) {
+                        // Purple
+                        gameDataConstruct["purple"][player[2]] = player[1];
+                    } else {
+                        // Blue
+                        gameDataConstruct["blue"][player[2]] = player[1];
+                    }
+                    if (!summonerDatabase[player[2]]) summonerDatabase[player[2]] = {};
+                    if (!summonerDatabase[player[2]][player[1]]) summonerDatabase[player[2]][player[1]] = [];
+                    pushIfNotPresent(summonerDatabase[player[2]][player[1]], gameID[1]);
+                }
+            }
+            gameDataConstruct["region"] = gameID[2].toLowerCase();
+            if (gameDataConstruct["region"] == "oc") {
+                gameDataConstruct["region"] = "oce";   
+            }
+
+            gameDatabase[gameID[1]] = gameDataConstruct;
+        }
+        processProgress++;
+        logData = null;
+        this.result = null;
+    };
+
+    reader.readAsText(file);
+}
+
 var processFile = function(fileEntry) {
     if (fileNameRegex.exec(fileEntry.name)) {
         fileEntry.file(function(file) {
-            var reader = new FileReader();
-
-            reader.onloadend = function(e) {
-                var gameDataConstruct = {};
-                var logData = this.result;
-                
-                var gameID = gameIDRegex.exec(logData);
-                var dateTime = fileNameRegex.exec(fileEntry.name);
-                gameDataConstruct["date"] = dateTime[1]+"/"+dateTime[2]+"/"+dateTime[3]+" "+
-                    dateTime[4]+":"+dateTime[5]+":"+dateTime[6];
-                if (!gameID) {
-                    gameID = [null, gameDataConstruct["date"], "unknown"];
-                }
-                var gameEnd = gameEndTimeRegex.exec(logData);
-                var gameEndTime;
-                if (gameEnd) {
-                    gameEndTime = parseFloat(gameEnd[1]);
-                    gameDataConstruct["result"] = gameEnd[2].toLowerCase();
-                } else {
-                    gameDataConstruct["result"] = "unknown";
-                    var altEndGame = altGameEndRegex.exec(logData);
-                    if (altEndGame) {
-                        gameEndTime = parseFloat(altEndGame[1]);
-                    }
-                }
-                var gameStart = gameStartTimeRegex.exec(logData);
-                if (gameStart) {
-                    var gameStartTime = parseFloat(gameStart[1]);
-                    gameDataConstruct["loading-time"] = gameStartTime;
-                    gameStats["loading"] = gameStats["loading"]+gameDataConstruct["loading-time"]
-                    if (gameEndTime) {
-                        gameDataConstruct["time"] = gameEndTime-gameStartTime;
-                    } else {
-                        gameDataConstruct["time"] = 0;   
-                    }
-                } else {
-                    gameDataConstruct["time"] = 0;
-                    gameDataConstruct["loading-time"] = 0;
-                }
-                var gameType = gameTypeRegex.exec(logData);
-                if (gameType) {
-                    gameDataConstruct["type"] = gameType[1].toLowerCase();
-                } else {
-                    gameDataConstruct["type"] = "unknown";
-                }
-                if (logData.indexOf("Creating Hero...") > 0) {
-                    gameDataConstruct["blue"] = {};
-                    gameDataConstruct["purple"] = {};
-                    while (player = playersRegex.exec(logData)) {
-                        if (player[2] == "1") {
-                            gameDataConstruct["blue"][player[3]] = player[1];
-                        } else {
-                            gameDataConstruct["purple"][player[3]] = player[1];
-                        }
-                        if (!summonerDatabase[player[3]]) summonerDatabase[player[3]] = {};
-                        if (!summonerDatabase[player[3]][player[1]]) summonerDatabase[player[3]][player[1]] = [];
-                        pushIfNotPresent(summonerDatabase[player[3]][player[1]], gameID[1]);
-                    }
-                    if (Object.keys(gameDataConstruct["blue"]).length+Object.keys(gameDataConstruct["purple"]).length <= 0) {
-                        var teamIndex = 0;
-                        while (player = altPlayerRegex.exec(logData)) {
-                            teamIndex++;
-                            if (teamIndex > 5) {
-                                // Purple
-                                gameDataConstruct["purple"][player[2]] = player[1];
-                            } else {
-                                // Blue
-                                gameDataConstruct["blue"][player[2]] = player[1];
-                            }
-                            if (!summonerDatabase[player[2]]) summonerDatabase[player[2]] = {};
-                            if (!summonerDatabase[player[2]][player[1]]) summonerDatabase[player[2]][player[1]] = [];
-                            pushIfNotPresent(summonerDatabase[player[2]][player[1]], gameID[1]);
-                        }
-                    }
-                    gameDataConstruct["region"] = gameID[2].toLowerCase();
-                    if (gameDataConstruct["region"] == "oc") {
-                        gameDataConstruct["region"] = "oce";   
-                    }
-                    
-                    gameDatabase[gameID[1]] = gameDataConstruct;
-                }
-                processProgress++;
-                logData = null;
-                this.result = null;
-            };
-
-            reader.readAsText(file);
+            processFileObject(file, fileEntry.name);
         }, function(e){console.log(e)});
         return true;
     } else {
