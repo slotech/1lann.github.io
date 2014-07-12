@@ -383,7 +383,7 @@ processData = function(files) {
         
         if (!entry) {
             processFailure("You didn't drop a folder!");
-            return;
+            break;
         }
         
         if (entry.isFile && i == 0) {
@@ -395,6 +395,7 @@ processData = function(files) {
                 folderProcessStack = [];
                 if (numOfFiles >= 1) {
                     correctDirectory = true;
+                    console.log("Using log file location: "+entry.fullPath);
                     progressInterval = setInterval(displayProgress, 200);
                 } else {
                     files = null;

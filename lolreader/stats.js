@@ -74,7 +74,7 @@ var drawGeneralStats = function() {
     var gameHours = getHumanTime(timeSeconds);
     var averageMinutes = getHumanTime(timeSeconds/(rates[0]));
     var loadingHours = getHumanTime(gameStats["loading"]);
-    console.log("hours: ",gameHours)
+
     dataToDrawLeft.push(["Number of games: ", (rates[0]).toString()]);
     dataToDrawLeft.push(["Time spent playing: ", gameHours]);
     dataToDrawLeft.push(["Time wasted on loading: ", loadingHours]);
