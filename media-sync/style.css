@@ -1,0 +1,26 @@
+#login-area {
+    height: 160px;
+    margin-top: -120px;
+    top: 50%;
+    left: 50%;
+    margin-left: -290px;
+    max-width: 600px;
+    position: absolute;
+    text-align: center;
+    padding-left: 10px;
+    padding-right: 10px;
+}
+
+#username-field {
+    max-width: 300px;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+#chat-field {
+    display: none;
+}
+
+button {
+    outline: none !important;
+}

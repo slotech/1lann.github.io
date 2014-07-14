@@ -1,7 +1,6 @@
 var peerJSKey = "esu07ebv3ni885mi";
 
-var isHost;
-var hostID;
+var ambassadorID;
 var peerID;
 var peerName;
 var peer;
@@ -14,12 +13,17 @@ var connectedPeers = {};
 var nicknames = {};
 
 if (/^#(.+)/.exec(window.location.hash)) {
-    isHost = false;
-    hostID = /^#(.+)/.exec(window.location.hash)[1];
-} else {
-    isHost = true;
+    ambassadorID = /^#(.+)/.exec(window.location.hash)[1];
 }
 
+if (sessionStorage.lastConnected) {
+    console.log("Last connected object found!");
+    var lastConnected = JSON.parse(sessionStorage.lastConnected);
+    if (lastConnected[ambassadorID]) {
+        console.log("Detected re-opened session, restoring...");
+        ambassadorID = lastConnected[ambassadorID];
+    }
+}
 
 var onMessageType = function(type, func) {
     functionsForTypes[type] = func;
@@ -36,9 +40,16 @@ var sendData = function(to, type, data) {
             type: type,
             data: data
         });
+        return true;
     } else {
         console.log("No such target!");
         return false;
+    }
+}
+
+var broadcastData = function(type, data) {
+    for (key in connectedPeers) {
+        sendData(key, type, data);
     }
 }
 
@@ -61,6 +72,10 @@ var receivedData = function(from, type, data) {
 
 var receivedUnhandledData = function(from, type, data) {
     console.log("Received unhandeled data from "+from+" type "+type+" data",data);
+}
+
+var fatalError = function(err) {
+    console.log("Fatal error",err)
 }
 // Override end
 
@@ -99,10 +114,10 @@ var registerPeerConnection = function(conn, label) {
 var connectToAllPeers = function(peerList) {
     var nicknameBuffer = {};
     for (key in peerList) {
-        if (peerList[key] == hostID) {
-            nicknames[hostID] = key;
+        if (peerList[key] == ambassadorID) {
+            nicknames[ambassadorID] = key;
         } else {
-            var connection = peer.connect(peerList[key]);
+            var connection = peer.connect(peerList[key], {label: peerName});
             nicknameBuffer[peerList[key]] = key;
             connection.on("open", function() {
                registerPeerConnection(this, nicknameBuffer[this.peer]);
@@ -117,60 +132,91 @@ var connectToAllPeers = function(peerList) {
 
 var connect = function(name, callback) {
     var connected = false;
+    var fullyConnected = false;
     
-    peerName = name;
+    peerName = name.trim();
+    
     peer = new Peer({key: peerJSKey});
     console.log("Peer object created!");
     peer.on("open", function(id) {
+        connected = true;
         console.log("Peer open and ready!");
         peerID = id;
         
         peer.on("connection", function(conn) {
-            registerPeerConnection(conn, conn.label);
+            conn.on("open", function(){
+                var joiningUsername = conn.label.trim();
+                if (joiningUsername.length > 4 && joiningUsername.length < 21) {
+                    if (joiningUsername == peerName) {
+                        console.log("Username already taken!");
+                        conn.send({type:"registration-error", data:"Username already taken!"});
+                        return;
+                    }
+                    for (key in nicknames) {
+                        if (nicknames[key] == joiningUsername) {
+                            console.log("Username already taken!");
+                            conn.send({type:"registration-error", data:"Username already taken!"});
+                            return;
+                        }
+                    }
+                    registerPeerConnection(conn, joiningUsername);
+                } else {
+                    console.log("Invalid username!");
+                    conn.send({type:"registration-error", data:"Username must be 5 to 20 characters long!"});
+                } 
+            });
         });
         
-        if (isHost) {
-            console.log("Hosting...")
-            hostID = peerID;
-            window.location.hash = peerID;
-            onMessageType("peer-list", function(from) {
-                console.log("Peer listing request from "+from);
-                var peerList = {};
-                for (key in connectedPeers) {
-                    if (key != from) {
-                        peerList[nicknames[key]] = key;
-                    }
+        // Setup ambassador tools
+        window.location.hash = peerID;
+        onMessageType("peer-list", function(from) {
+            console.log("Peer listing request from "+from);
+            var peerList = {};
+            for (key in connectedPeers) {
+                if (key != from) {
+                    peerList[nicknames[key]] = key;
                 }
-                peerList[peerName] = peerID;
-                sendData(from, "peer-list-response", peerList) 
-            });
-            callback();
-        } else {
-            console.log("Connecting to host...",hostID);
-            hostConnection = peer.connect(hostID, {label: peerName});
+            }
+            peerList[peerName] = peerID;
+            sendData(from, "peer-list-response", peerList) 
+        });
+        
+        // Connect to ambassador if there is one
+        if (ambassadorID) {
+            hostConnection = peer.connect(ambassadorID, {label: peerName});
+            
             hostConnection.on("open", function() {
                 connected = true;
                 console.log("Connected to host! Requesting peer list...")
                 registerPeerConnection(hostConnection);
+                
+                onMessageType("registration-error", function(from, data) {
+                    if (from == ambassadorID) {
+                        peer.destroy();
+                        connectedPeers = {};
+                        fatalError(data);
+                    } 
+                });
+                
                 onMessageType("peer-list-response", function(from, data) {
                     console.log("Receive peer-list")
-                    if (from == hostID) {
+                    if (from == ambassadorID) {
                         clearMessageType("peer-list-response");
+                        clearMessageType("registration-error");
+                        fullyConnected = true;
                         connectToAllPeers(data);
+                        callback();
                     }
                 });
+                
                 hostConnection.send({type:"peer-list",data:"request"});
-                callback();
             });
             
             timeoutTimeout = setTimeout(function() {
                 if (!connected) {
-                    console.log("Could not connect to host! Recreating as host...")
-                    isHost = true;
-                    connect(name, callback);
+                    console.log("Heads up! Failed to connect to ambassador")
                 }
             }, 5000);
-            
         }
         
     });
@@ -178,11 +224,28 @@ var connect = function(name, callback) {
     peer.on("error", function(err) {
         if (err.type == "peer-unavailable") {
             clear(timeoutTimeout);
-            console.log("Error detected! Could not connect to host! Recreating as host...")
-            isHost = true;
-            connect(name, callback);
+            console.log("Heads up! Failed to connect to ambassador")
+        } else {
+            peerError(peerID, err);
         }
     });
+    
+    timeoutTimeout = setTimeout(function() {
+        if (!connected) {
+            peer.destroy();
+            connectedPeers = {};
+            fatalError("Peer registeration failed!");
+        }
+    }, 5000);
+}
+
+window.onbeforeunload = function(e) {
+    for (key in connectedPeers) {
+        var lastConnected = {};
+        lastConnected[peerID] = key;
+        sessionStorage.lastConnected = JSON.stringify(lastConnected);
+        break;
+    }
 }
 
 var quick = function(name) {

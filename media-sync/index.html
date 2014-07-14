@@ -8,12 +8,25 @@
 <body>
 <div class="container">
     <div id="chat-area"></div>
-    <div class="input-group">
-        <span class="input-group-addon">1lann: </span>
+    <div id="chat-field" class="input-group">
         <input type="text" class="form-control" placeholder="Username">
+        <span class="input-group-btn">
+            <button class="btn btn-default" type="button">Connect</button>
+        </span>
+    </div>
+    <div id="login-area">
+        <h1>Enter a username to join the room</h1>
+        <hr>
+        <div id="username-field" class="input-group input-group-lg">
+            <input type="text" class="form-control" placeholder="Username" data-toggle="tooltip" data-placement="top" data-trigger="manual" title="Username already taken!">
+            <span class="input-group-btn">
+                <button class="btn btn-default" type="button" disabled>Connect</button>
+            </span>
+        </div>
     </div>
 </div>
 <script src="http://code.jquery.com/jquery-2.1.1.min.js"></script>
+<script src="//maxcdn.bootstrapcdn.com/bootstrap/3.2.0/js/bootstrap.min.js"></script>
 <script src="http://cdn.peerjs.com/0.3/peer.js"></script>
 <script src="communicate.js"></script>
 <script src="chat.js"></script>
