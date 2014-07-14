@@ -6,11 +6,10 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
 	<title>Media Sync</title>
 	<link href="//maxcdn.bootstrapcdn.com/bootstrap/3.2.0/css/bootstrap.min.css" rel="stylesheet">
-	<link href="style.css" rel="stylesheet">
+    <link href="style.css" rel="stylesheet">
 </head>
 <body>
 <div class="container">
-    <div id="chat-area"></div>
     <div id="chat-field" class="input-group">
         <input type="text" class="form-control" placeholder="Username">
         <span class="input-group-btn">
@@ -27,11 +26,35 @@
             </span>
         </div>
     </div>
+    <div id="interaction-area">
+        <div id="header-area">
+            <h1>Chat room name</h1>
+        </div>
+        <div id="chat-area">
+            <div id="message-area">
+                <table id="chat-table">
+                    <tr>
+                        <span class="username" user="john">John</span><br>
+                        <div class="message">
+                            <span>Text text text</span><br>
+                            <span>More text text text</span><br>
+                        </div>
+                    </tr>
+                </table>
+            </div>
+            <div id="input-box">
+                <input type="text" class="form-control input-lg" placeholder="Send a message...">
+            </div>
+        </div>
+    </div>
 </div>
 <script src="http://code.jquery.com/jquery-2.1.1.min.js"></script>
+<script src="http://code.jquery.com/color/jquery.color-2.1.2.min.js"></script>
+<script src="auto-grow.js"></script>
 <script src="//maxcdn.bootstrapcdn.com/bootstrap/3.2.0/js/bootstrap.min.js"></script>
 <script src="http://cdn.peerjs.com/0.3/peer.js"></script>
 <script src="communicate.js"></script>
+<script src="connect.js"></script>
 <script src="chat.js"></script>
 </body>
 </html>

@@ -12,8 +12,8 @@ var functionsForTypes = {};
 var connectedPeers = {};
 var nicknames = {};
 
-if (/^#(.+)/.exec(window.location.hash)) {
-    ambassadorID = /^#(.+)/.exec(window.location.hash)[1];
+if (/^#(.+)$/.exec(window.location.hash)) {
+    ambassadorID = /^#(.+)$/.exec(window.location.hash)[1];
 }
 
 if (sessionStorage.lastConnected) {
@@ -67,11 +67,11 @@ var peerError = function(peerName, error) {
 }
 
 var receivedData = function(from, type, data) {
-    console.log("Received data from "+from+" type "+type+" data",data);
+    console.log("Received data from " + from + " type " + type + " data", data);
 }
 
 var receivedUnhandledData = function(from, type, data) {
-    console.log("Received unhandeled data from "+from+" type "+type+" data",data);
+    console.log("Received unhandeled data from " + from + " type " + type + " data", data);
 }
 
 var fatalError = function(err) {

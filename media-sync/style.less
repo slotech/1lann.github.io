@@ -1,0 +1,102 @@
+// out: style.css
+
+@import "bootstrap/variables";
+
+@production: none;
+@demo-color: #3498db;
+
+#login-area {
+    @top-spacer: 50px;
+    top: @top-spacer;
+    display: @production;
+    
+    @media (min-width: @screen-md-min) {
+        @height: 160px;
+        height: @height;
+        top: (@top-spacer*2);
+        left: 50%;
+        @width: 600px;
+        max-width: @width;
+        margin-left: (-1*@width/2);
+        position: absolute;
+    }
+    text-align: center;
+}
+
+#username-field {
+    max-width: 300px;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+#interaction-area {
+    width: 100%;
+}
+
+#header-area {
+    .title-edit {
+        font-size: @font-size-h1;
+        font-family: @font-family-base;
+        font-weight: @headings-font-weight;
+        line-height: @headings-line-height;
+        margin-top: 17px;
+        margin-left: -1px;
+        padding: none;
+        border: none;
+        outline: none;
+        width: 0px;
+        border-bottom: 4px solid @gray-lighter;
+    }
+}
+
+#chat-area {
+    @height: 500px;
+    position: relative;
+    height: @height;
+    max-width: 400px;
+    margin-left: auto;
+    margin-right: auto;
+    
+    top: 20px;
+    
+    @media (min-width: @screen-md-min) {
+        width: 400px;
+        margin-right: 0;
+    }
+    
+    #message-area {
+        padding: 10px;
+        height: (@height - @input-height-base);
+        border: 1px solid @input-border;
+        border-bottom: none;
+        border-top-left-radius: @border-radius-base;
+        border-top-right-radius: @border-radius-base;
+        
+        .username {
+            font-size: 18px;
+            font-weight: 200;
+            color: @demo-color;
+        }
+        
+        .message {
+            border-left: 3px solid @demo-color;
+            padding-left: 3px;
+            font-size: 16px;
+        }
+    }
+    
+    #input-box {
+        input {
+            border-top-left-radius: 0px;
+            border-top-right-radius: 0px;
+        }
+    }
+}
+
+#chat-field {
+    display: none;
+}
+
+button {
+    outline: none !important;
+}
