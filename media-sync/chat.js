@@ -65,13 +65,13 @@ var startChat = function(username) {
     disconnectedFromNetwork = function() {
         displayMessage("Connection lost!", "System");
         $("#chat-area #input-box input").attr("disabled", true);
-        $("#chat-area #input-box input").text("- Disconnected -")
+        $("#chat-area #input-box input").val("- Disconnected -")
     }
     
     reconnectedToNetwork = function() {
         displayMessage("Re-connected!", "System");
         $("#chat-area #input-box input").attr("disabled", false);
-        $("#chat-area #input-box input").text("");
+        $("#chat-area #input-box input").val("");
     }
     
     peerConnected = function(peerName) {

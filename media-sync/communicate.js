@@ -142,13 +142,15 @@ var registerPeerConnection = function(conn, label) {
                     if (peer.disconnected) {
                         peer.reconnect();
                     }
+                    connectedPeers = {};
+                    nicknames = {};
                     connectToAllPeers(recoveryPeerList);
                     setTimeout(function() {
                         connectedToNetwork = true;
                         reconnectedToNetwork();
                     }, 3000);
                 }
-            });
+            }, 1000);
         }
     });
     
@@ -168,7 +170,7 @@ var registerPeerConnection = function(conn, label) {
 var connectToAllPeers = function(peerList) {
     var nicknameBuffer = {};
     for (key in peerList) {
-        if (peerList[key] == ambassadorID) {
+        if ((peerList[key] == ambassadorID) && connectedToNetwork) {
             nicknames[ambassadorID] = key;
         } else {
             var connection = peer.connect(peerList[key], {label: peerName});
