@@ -5,7 +5,7 @@ var peerID;
 var peerName;
 var peer;
 var hostConnection;
-var timeoutTime = 5000;
+var timeoutTime = 7000;
 
 var timeoutTimeout;
 
@@ -72,6 +72,14 @@ var getUsername = function(peerName) {
 }
 
 // Override this
+var disconnectedFromNetwork = function(peer) {
+    
+}
+
+var connectedToNetwork = function() {
+    
+}
+
 var peerDisconnected = function(peerName) {
     console.log("Peer disconnected: "+peerName);
 }
@@ -229,6 +237,7 @@ var connect = function(name, callback) {
                         fullyConnected = true;
                         connectToAllPeers(data);
                         callback();
+                        callback = function() {};
                     }
                 });
                 
@@ -240,12 +249,20 @@ var connect = function(name, callback) {
                 if (!fullyConnected) {
                     console.log("Heads up! Failed to connect to ambassador")
                     callback();
+                    callback = function() {};
                 }
             }, timeoutTime);
         } else {
             callback();
+            callback = function() {};
         }
-
+        
+        connectedToNetwork();
+    });
+    
+    peer.on("disconnected", function() {
+        peer.reconnect();
+        disconnectedFromNetwork(peer); 
     });
     
     peer.on("error", function(err) {
@@ -253,6 +270,7 @@ var connect = function(name, callback) {
             clear(timeoutTimeout);
             console.log("Heads up! Failed to connect to ambassador")
             callback();
+            callback = function() {};
         } else {
             peerError(peerID, err);
         }

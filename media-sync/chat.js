@@ -56,14 +56,41 @@ var displayMessage = function(message, user) {
 }
 
 var startChat = function(username) {
+    var connectionInterval;
+    var connected = true;
+    
+    disconnectedFromNetwork = function(peer) {
+        displayMessage("Connection lost!", "System");
+        $("#chat-area #input-box input").attr("disabled", true);
+        $("#chat-area #input-box input").text("- Disconnected -")
+        connected = false;
+        
+        connectionInterval = setInterval(function() {
+            if (peer.disconnected) {
+                peer.reconnect();
+            } else {
+                $("#chat-area #input-box input").attr("disabled", false);
+                $("#chat-area #input-box input").text("");
+                displayMessage("Re-connected!", "System");
+                setTimeout(function() {connected = true;}, 3000);
+                
+                clearInterval(connectionInterval);
+            }
+        }, 3000);
+    }
+    
     peerConnected = function(peerName) {
-        var name = getUsername(peerName);
-        displayMessage(name + " has joined the room!", "System");
+        if (connected) {
+            var name = getUsername(peerName);
+            displayMessage(name + " has joined the room!", "System");
+        }
     }
     
     peerDisconnected = function(peerName) {
-        var name = getUsername(peerName);
-        displayMessage(name + " has left the room!", "System");
+        if (connected) {
+            var name = getUsername(peerName);
+            displayMessage(name + " has left the room!", "System");
+        }
     }
     
     onMessageType("chat-message", function(peerName, message) {

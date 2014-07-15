@@ -43,7 +43,7 @@ $("#username-field input").on("keyup", function(e) {
 });
 
 var startLoginCountdown = function() {
-    var timer = 5;
+    var timer = 7;
     loginInterval = setInterval(function() {
         $("#username-field button").text("Connecting ("+timer+")");
         timer--;
