@@ -79,8 +79,7 @@ var startChat = function(username) {
         displayMessage(name + " has joined the room!", "System");
     }
     
-    peerDisconnected = function(peerName) {
-        var name = getUsername(peerName);
+    peerDisconnected = function(peerName, name) {
         displayMessage(name + " has left the room!", "System");
     }
     

@@ -82,7 +82,7 @@ var reconnectedToNetwork = function() {
 
 }
 
-var peerDisconnected = function(peerName) {
+var peerDisconnected = function(peerName, username) {
     console.log("Peer disconnected: "+peerName);
 }
 
@@ -125,9 +125,10 @@ var registerPeerConnection = function(conn, label) {
     
     conn.on("close", function() {
         if (window.navigator.onLine) {
+            var username = getUsername(this.peer);
             delete connectedPeers[this.peer];
             delete nicknames[this.peer];
-            peerDisconnected(this.peer);
+            peerDisconnected(this.peer, username);
         } else if (connectedToNetwork) {
             recoveryPeerList = [];
             for (key in connectedPeers) {
