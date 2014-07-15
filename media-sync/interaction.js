@@ -15,7 +15,8 @@ window.onresize = function() {
         if (window.innerHeight <= 620) {
             $("#chat-area #message-area").height(window.innerHeight-heightOffset-20);
         } else {
-            $("#chat-area #message-area").height("");
+            $("#chat-area").removeAttr("style");
+            $("#chat-area #message-area").removeAttr("style");
         }
     }
 }
@@ -37,6 +38,7 @@ $("#header-area h1").dblclick(function() {
         if (inputField.val().trim().length > 1) {
             $("#header-area h1").text(inputField.val()).show();
             inputField.remove();
+            broadcastData("title-rename", inputField.val());
         } else {
             $("#header-area h1").show()
             inputField.remove();
@@ -65,3 +67,23 @@ $("#chat-area #input-box input").blur(function() {
 });
 
 window.onresize();
+
+var setupInteractionResponses = function() {
+    onMessageType("title-rename", function(from, title) {
+        if (typeof(title) == "string") {
+            $("#header-area h1").text(title);
+        }
+    });
+    
+    onMessageType("request-title", function(from) {
+        console.log("Requested title")
+        sendData(from, "title-rename", $("#header-area h1").text()); 
+    });
+}
+
+var runEverything = function(username) {
+    setupInteractionResponses();
+    
+    requestData("request-title");
+    startChat(username);
+}

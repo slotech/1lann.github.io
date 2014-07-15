@@ -25,6 +25,10 @@
 #header-area {
   text-align: center;
 }
+#header-area h1 {
+  display: inline-block;
+  width: 80%;
+}
 #header-area .title-edit {
   font-size: 36px;
   font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
@@ -38,6 +42,54 @@
   outline: none;
   width: 0px;
   border-bottom: 4px solid #eeeeee;
+}
+#header-area #connected-list-area {
+  top: 35px;
+  position: relative;
+  float: right;
+}
+#header-area #connected-list-area button {
+  width: 78px;
+  border-bottom: none;
+  border-bottom-left-radius: 0;
+  border-bottom-right-radius: 0;
+}
+#header-area #connected-list-area .badge {
+  background-color: #4cae4c;
+  display: block;
+  position: relative;
+  float: right;
+  top: 1px;
+  left: 1px;
+}
+#header-area #connected-list-area #connected-list {
+  display: none;
+  z-index: 10;
+  padding-top: 10px;
+  position: absolute;
+  right: 0px;
+  background-color: #eeeeee;
+  width: 250px;
+  border: 1px solid #cccccc;
+}
+#header-area #connected-list-area #connected-list span.list-heading {
+  padding-left: 15px;
+  font-size: 20px;
+  font-weight: 500;
+}
+#header-area #connected-list-area #connected-list ul {
+  list-style-type: none;
+  padding: 0px;
+  margin: 0px;
+  margin-bottom: 10px;
+}
+#header-area #connected-list-area #connected-list ul li {
+  padding-left: 15px;
+  font-size: 18px;
+  font-weight: 200;
+}
+#header-area #connected-list-area #connected-list ul li:hover {
+  background-color: #f6f6f6;
 }
 @media (min-width: 992px) {
   #header-area {
@@ -72,11 +124,11 @@
 #chat-area #message-area {
   padding: 10px;
   overflow-y: scroll;
+  word-break: break-all;
   bottom: 0px;
   border: 1px solid #cccccc;
   border-bottom: none;
   border-top-left-radius: 4px;
-  border-top-right-radius: 4px;
 }
 @media (min-width: 992px) {
   #chat-area #message-area {

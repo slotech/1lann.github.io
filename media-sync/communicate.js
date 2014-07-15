@@ -10,6 +10,7 @@ var connectedToNetwork = true;
 
 var timeoutTimeout;
 
+var initialPeerList = {};
 var functionsForTypes = {};
 var connectedPeers = {};
 var recoveryPeerList = [];
@@ -55,6 +56,13 @@ var sendData = function(to, type, data) {
     } else {
         console.log("No such target!");
         return false;
+    }
+}
+
+var requestData = function(type) {
+    for (key in connectedPeers) {
+        sendData(key, type, "request");
+        return;
     }
 }
 
@@ -128,6 +136,7 @@ var registerPeerConnection = function(conn, label) {
             var username = getUsername(this.peer);
             delete connectedPeers[this.peer];
             delete nicknames[this.peer];
+            initialPeerList = {};
             peerDisconnected(this.peer, username);
         } else if (connectedToNetwork) {
             recoveryPeerList = [];
@@ -164,6 +173,11 @@ var registerPeerConnection = function(conn, label) {
     }
     
     if (connectedToNetwork) {
+        for (key in initialPeerList) {
+            if (initialPeerList[key] == conn.peer) {
+                return;
+            }
+        }
         peerConnected(conn.peer);
     }
 }
@@ -266,6 +280,7 @@ var connect = function(name, callback) {
                         clearMessageType("peer-list-response");
                         clearMessageType("registration-error");
                         fullyConnected = true;
+                        initialPeerList = data;
                         connectToAllPeers(data);
                         callback();
                         callback = function() {};

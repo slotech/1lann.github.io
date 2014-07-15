@@ -60,7 +60,29 @@ var displayMessage = function(message, user) {
     }
 }
 
+var slideDown = false;
+
+$("#header-area #connected-list-area button").click(function() {
+    if (slideDown) {
+        $("#header-area #connected-list-area #connected-list").hide();
+        $("#header-area #connected-list-area button").removeClass("active");
+        $("#header-area #connected-list-area button").blur();
+    } else {
+        $("#header-area #connected-list-area button").addClass("active");
+        var list = $("#header-area #connected-list-area #connected-list ul");
+        list.html("");
+        list.append("<li style='color: " + getUserColor(myUsername) + ";'>" + myUsername + " (You)</li>")
+        for (key in nicknames) {
+            list.append("<li style='color: " + getUserColor(nicknames[key]) + ";'>" + nicknames[key] + "</li>");
+        }
+        $("#header-area #connected-list-area #connected-list").show();
+    }
+    
+    slideDown = !slideDown;
+});
+
 var startChat = function(username) {
+    var onlineBadge = $("#header-area #connected-list-area button .badge");
     
     disconnectedFromNetwork = function() {
         displayMessage("Connection lost!", "System");
@@ -77,10 +99,12 @@ var startChat = function(username) {
     peerConnected = function(peerName) {
         var name = getUsername(peerName);
         displayMessage(name + " has joined the room!", "System");
+        onlineBadge.text((1 + Object.keys(nicknames).length).toString())
     }
     
     peerDisconnected = function(peerName, name) {
         displayMessage(name + " has left the room!", "System");
+        onlineBadge.text((1 + Object.keys(nicknames).length).toString())
     }
     
     onMessageType("chat-message", function(peerName, message) {
@@ -91,7 +115,7 @@ var startChat = function(username) {
     
     myUsername = username;
     $("#chat-area #input-box input").on("keyup", function(e) {
-        if (e.which == 13) {
+        if (e.which == 13 && $(this).val().trim().length > 0) {
             displayMessage($(this).val(), myUsername);
             broadcastData("chat-message", $(this).val());
             $(this).val("");
@@ -99,4 +123,10 @@ var startChat = function(username) {
     });
     
     displayMessage(username + " has joined the room!", "System");
+    
+    onlineBadge.text((1 + Object.keys(nicknames).length).toString());
+    setInterval(function() {
+        onlineBadge.text((1 + Object.keys(nicknames).length).toString());
+    }, 1000);
+    
 }

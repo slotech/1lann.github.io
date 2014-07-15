@@ -4,15 +4,15 @@ var usernameError = function(error) {
     clearInterval(loginInterval);
     $("#username-field button").attr("disabled", false);
     $("#username-field button").text("Connect");
-    $("#username-field input").attr("title", error);
+    $("#username-field input").attr("data-content", error);
     $("#username-field input").attr("disabled", false);
-    $("#username-field input").tooltip("show");
+    $("#username-field input").popover("show");
 }
 
 fatalError = usernameError;
 
 $("#username-field button").click(function(e) {
-    $("#username-field input").tooltip("destroy");
+    $("#username-field input").popover("destroy");
     var usernameField = $("#username-field input");
     if (containsSymbols(usernameField.val())) {
         usernameError("Username contains forbidden symbols!");
@@ -23,7 +23,7 @@ $("#username-field button").click(function(e) {
         $("#login-area").fadeOut(500);
         setTimeout(function() {
             $("#interaction-area").fadeIn(500);
-            startChat(usernameField.val());
+            runEverything(usernameField.val());
         },500);
     });
     $("#username-field input").attr("disabled", true);
