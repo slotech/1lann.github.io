@@ -19,9 +19,9 @@ if (/^#(.+)$/.exec(window.location.hash)) {
     ambassadorID = /^#(.+)$/.exec(window.location.hash)[1];
 }
 
-if (sessionStorage.lastConnected) {
+if (localStorage.getItem("lastConnected")) {
     console.log("Last connected object found!");
-    var lastConnected = JSON.parse(sessionStorage.lastConnected);
+    var lastConnected = JSON.parse(localStorage.getItem("lastConnected"));
     if (lastConnected[ambassadorID]) {
         console.log("Detected re-opened session, restoring...");
         ambassadorID = lastConnected[ambassadorID];
@@ -318,7 +318,7 @@ window.onbeforeunload = function(e) {
     for (key in connectedPeers) {
         var lastConnected = {};
         lastConnected[peerID] = key;
-        sessionStorage.lastConnected = JSON.stringify(lastConnected);
+        localStorage.setItem("lastConnected", JSON.stringify(lastConnected));
         break;
     }
 }
