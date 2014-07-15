@@ -105,6 +105,7 @@ var onPlayerStateChange = function(obj) {
 }
 
 var loadYoutube = function(url) {
+    contentArea.html("");
     embedURL = url;
     mediaPlayer = new YT.Player('content-display-area', {
       height: '390',
