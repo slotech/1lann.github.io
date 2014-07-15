@@ -3,12 +3,11 @@
 @import "bootstrap/variables";
 
 @production: none;
-@demo-color: #3498db;
+@demo-color: #000;
 
 #login-area {
     @top-spacer: 50px;
     top: @top-spacer;
-    display: @production;
     
     @media (min-width: @screen-md-min) {
         @height: 160px;
@@ -24,12 +23,13 @@
 }
 
 #username-field {
-    max-width: 300px;
+    max-width: 350px;
     margin-left: auto;
     margin-right: auto;
 }
 
 #interaction-area {
+    display: @production;
     width: 100%;
 }
 
@@ -48,35 +48,61 @@
         width: 0px;
         border-bottom: 4px solid @gray-lighter;
     }
+    
+    text-align: center;
+    
+    @media (min-width: @screen-md-min) {
+        text-align: left;
+    }
 }
 
 #chat-area {
     @height: 500px;
-    position: relative;
-    height: @height;
+    @width: 400px;
+    @padding: 20px;
+    position: absolute;
+    max-height: @height;
+    top: 70px;
+    width: 100%;
     max-width: 400px;
-    margin-left: auto;
+    bottom: 0px;
+    left: 50%;
+    margin-left: (-1*@width/2);
     margin-right: auto;
-    
-    top: 20px;
+    margin-bottom: 20px;
+    padding-right: @padding;
+    padding-left: @padding;
     
     @media (min-width: @screen-md-min) {
-        width: 400px;
+        position: relative;
         margin-right: 0;
+        left: 0;
+        top: 10px;
+        margin-left: auto;
+        padding-right: 0;
+        padding-left: 0;
     }
     
     #message-area {
         padding: 10px;
-        height: (@height - @input-height-base);
+        overflow-y: scroll;
+        bottom: 0px;
         border: 1px solid @input-border;
         border-bottom: none;
         border-top-left-radius: @border-radius-base;
         border-top-right-radius: @border-radius-base;
         
+        @media (min-width: @screen-md-min) {
+            height: (@height - @input-height-large);
+        }
+        
         .username {
+            display: block;
+            margin-top: 3px;
             font-size: 18px;
-            font-weight: 200;
+            font-weight: 300;
             color: @demo-color;
+            line-height: 25px;
         }
         
         .message {

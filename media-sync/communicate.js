@@ -5,6 +5,7 @@ var peerID;
 var peerName;
 var peer;
 var hostConnection;
+var timeoutTime = 5000;
 
 var timeoutTimeout;
 
@@ -22,6 +23,14 @@ if (sessionStorage.lastConnected) {
     if (lastConnected[ambassadorID]) {
         console.log("Detected re-opened session, restoring...");
         ambassadorID = lastConnected[ambassadorID];
+    }
+}
+
+var containsSymbols = function(text) {
+    if (text.indexOf("<") >= 0 || text.indexOf(">") >= 0 || text.indexOf("\"") >= 0 || text.indexOf("&") >= 0) {
+        return true;
+    } else {
+        return false;
     }
 }
 
@@ -50,6 +59,15 @@ var sendData = function(to, type, data) {
 var broadcastData = function(type, data) {
     for (key in connectedPeers) {
         sendData(key, type, data);
+    }
+}
+
+var getUsername = function(peerName) {
+    if (nicknames[peerName]) {
+        return nicknames[peerName];
+    } else {
+        console.log("Could not find user!");
+        return peerName;
     }
 }
 
@@ -147,6 +165,10 @@ var connect = function(name, callback) {
             conn.on("open", function(){
                 var joiningUsername = conn.label.trim();
                 if (joiningUsername.length > 4 && joiningUsername.length < 21) {
+                    if (containsSymbols(joiningUsername)) {
+                        console.log("Username with symbols!")
+                        conn.send({type:"registration-error", data:"Username contains forbidden symbols!"});
+                    }
                     if (joiningUsername == peerName) {
                         console.log("Username already taken!");
                         conn.send({type:"registration-error", data:"Username already taken!"});
@@ -194,6 +216,7 @@ var connect = function(name, callback) {
                     if (from == ambassadorID) {
                         peer.destroy();
                         connectedPeers = {};
+                        clearTimeout(timeoutTimeout);
                         fatalError(data);
                     } 
                 });
@@ -212,19 +235,24 @@ var connect = function(name, callback) {
                 hostConnection.send({type:"peer-list",data:"request"});
             });
             
+            clearTimeout(timeoutTimeout);
             timeoutTimeout = setTimeout(function() {
-                if (!connected) {
+                if (!fullyConnected) {
                     console.log("Heads up! Failed to connect to ambassador")
+                    callback();
                 }
-            }, 5000);
+            }, timeoutTime);
+        } else {
+            callback();
         }
-        
+
     });
     
     peer.on("error", function(err) {
         if (err.type == "peer-unavailable") {
             clear(timeoutTimeout);
             console.log("Heads up! Failed to connect to ambassador")
+            callback();
         } else {
             peerError(peerID, err);
         }
@@ -236,7 +264,8 @@ var connect = function(name, callback) {
             connectedPeers = {};
             fatalError("Peer registeration failed!");
         }
-    }, 5000);
+    }, timeoutTime);
+    startLoginCountdown();
 }
 
 window.onbeforeunload = function(e) {
