@@ -6,11 +6,13 @@ var peerName;
 var peer;
 var hostConnection;
 var timeoutTime = 7000;
+var connectedToNetwork = true;
 
 var timeoutTimeout;
 
 var functionsForTypes = {};
 var connectedPeers = {};
+var recoveryPeerList = [];
 var nicknames = {};
 
 if (/^#(.+)$/.exec(window.location.hash)) {
@@ -76,8 +78,8 @@ var disconnectedFromNetwork = function(peer) {
     
 }
 
-var connectedToNetwork = function() {
-    
+var reconnectedToNetwork = function() {
+
 }
 
 var peerDisconnected = function(peerName) {
@@ -122,8 +124,31 @@ var registerPeerConnection = function(conn, label) {
     });
     
     conn.on("close", function() {
-        delete connectedPeers[this.peer];
-        peerDisconnected(this.peer);
+        if (window.navigator.onLine) {
+            delete connectedPeers[this.peer];
+            peerDisconnected(this.peer);
+        } else if (connectedToNetwork) {
+            recoveryPeerList = [];
+            for (key in connectedPeers) {
+                recoveryPeerList[nicknames[key]] = key;
+            }
+            connectedToNetwork = false;
+            disconnectedFromNetwork();
+            
+            var connectionInterval = setInterval(function() {
+                if (window.navigator.onLine) {
+                    clearInterval(connectionInterval);
+                    if (peer.disconnected) {
+                        peer.reconnect();
+                    }
+                    connectToAllPeers(recoveryPeerList);
+                    setTimeout(function() {
+                        connectedToNetwork = true;
+                        reconnectedToNetwork();
+                    }, 3000);
+                }
+            });
+        }
     });
     
     conn.on("error", function(err) {
@@ -133,8 +158,10 @@ var registerPeerConnection = function(conn, label) {
     if (label) {
         nicknames[conn.peer] = label;
     }
-        
-    peerConnected(conn.peer);
+    
+    if (connectedToNetwork) {
+        peerConnected(conn.peer);
+    }
 }
 
 var connectToAllPeers = function(peerList) {
@@ -157,7 +184,7 @@ var connectToAllPeers = function(peerList) {
 }
 
 var connect = function(name, callback) {
-    var connected = false;
+    var connectedToServer = false;
     var fullyConnected = false;
     
     peerName = name.trim();
@@ -165,7 +192,7 @@ var connect = function(name, callback) {
     peer = new Peer({key: peerJSKey});
     console.log("Peer object created!");
     peer.on("open", function(id) {
-        connected = true;
+        connectedToServer = true;
         console.log("Peer open and ready!");
         peerID = id;
         
@@ -216,7 +243,7 @@ var connect = function(name, callback) {
             hostConnection = peer.connect(ambassadorID, {label: peerName});
             
             hostConnection.on("open", function() {
-                connected = true;
+                connectedToServer = true;
                 console.log("Connected to host! Requesting peer list...")
                 registerPeerConnection(hostConnection);
                 
@@ -256,18 +283,15 @@ var connect = function(name, callback) {
             callback();
             callback = function() {};
         }
-        
-        connectedToNetwork();
     });
     
     peer.on("disconnected", function() {
-        peer.reconnect();
-        disconnectedFromNetwork(peer); 
+
     });
     
     peer.on("error", function(err) {
         if (err.type == "peer-unavailable") {
-            clear(timeoutTimeout);
+            clearTimeout(timeoutTimeout);
             console.log("Heads up! Failed to connect to ambassador")
             callback();
             callback = function() {};
@@ -277,7 +301,7 @@ var connect = function(name, callback) {
     });
     
     timeoutTimeout = setTimeout(function() {
-        if (!connected) {
+        if (!connectedToServer) {
             peer.destroy();
             connectedPeers = {};
             fatalError("Peer registeration failed!");

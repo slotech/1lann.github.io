@@ -38,7 +38,12 @@ var displayMessage = function(message, user) {
     var messageArea = $("#chat-area #message-area");
     var isBottom = isAtBottom();
     
-    if (lastUser == user) {
+    if (user == "System") {
+        var userColor = getUserColor(user);
+        messageArea.append("<span class='username' style='color: " + userColor + ";'>" + message + "</span>")
+        lastDiv = null;
+        lastUser = null;
+    } else if (lastUser == user) {
         lastDiv.append("<span>" + sanatize(message) + "</span><br>")
     } else {
         var userColor = getUserColor(user);
@@ -56,27 +61,17 @@ var displayMessage = function(message, user) {
 }
 
 var startChat = function(username) {
-    var connectionInterval;
-    var connected = true;
     
-    disconnectedFromNetwork = function(peer) {
+    disconnectedFromNetwork = function() {
         displayMessage("Connection lost!", "System");
         $("#chat-area #input-box input").attr("disabled", true);
         $("#chat-area #input-box input").text("- Disconnected -")
-        connected = false;
-        
-        connectionInterval = setInterval(function() {
-            if (peer.disconnected) {
-                peer.reconnect();
-            } else {
-                $("#chat-area #input-box input").attr("disabled", false);
-                $("#chat-area #input-box input").text("");
-                displayMessage("Re-connected!", "System");
-                setTimeout(function() {connected = true;}, 3000);
-                
-                clearInterval(connectionInterval);
-            }
-        }, 3000);
+    }
+    
+    reconnectedToNetwork = function() {
+        displayMessage("Re-connected!", "System");
+        $("#chat-area #input-box input").attr("disabled", false);
+        $("#chat-area #input-box input").text("");
     }
     
     peerConnected = function(peerName) {
