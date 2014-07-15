@@ -75,17 +75,13 @@ var startChat = function(username) {
     }
     
     peerConnected = function(peerName) {
-        if (connected) {
-            var name = getUsername(peerName);
-            displayMessage(name + " has joined the room!", "System");
-        }
+        var name = getUsername(peerName);
+        displayMessage(name + " has joined the room!", "System");
     }
     
     peerDisconnected = function(peerName) {
-        if (connected) {
-            var name = getUsername(peerName);
-            displayMessage(name + " has left the room!", "System");
-        }
+        var name = getUsername(peerName);
+        displayMessage(name + " has left the room!", "System");
     }
     
     onMessageType("chat-message", function(peerName, message) {

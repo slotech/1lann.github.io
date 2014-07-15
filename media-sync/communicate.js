@@ -126,6 +126,7 @@ var registerPeerConnection = function(conn, label) {
     conn.on("close", function() {
         if (window.navigator.onLine) {
             delete connectedPeers[this.peer];
+            delete nicknames[this.peer];
             peerDisconnected(this.peer);
         } else if (connectedToNetwork) {
             recoveryPeerList = [];
