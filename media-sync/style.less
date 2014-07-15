@@ -190,10 +190,17 @@ button {
     outline: none !important;
 }
 
-.animate {
-	-webkit-transition: all 0.4s ease-out;
-	-moz-transition: all 0.4s ease-out;
-	-ms-transition: all 0.4s ease-out;
-	-o-transition: all 0.4s ease-out;
-	transition: all 0.4s ease-out;
+#content-area {
+    position: relative;
+    top: 10px;
+    display: none;
+    float: left;
+    
+    @media (min-width: @screen-md-min) {
+        display: block;
+        width: 520px;
+    }
+    @media (min-width: @screen-lg-min) {
+        width: 720px;
+    }
 }

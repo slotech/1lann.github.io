@@ -6,9 +6,11 @@ var peerName;
 var peer;
 var hostConnection;
 var timeoutTime = 7000;
+var refreshTime = 60000;
 var connectedToNetwork = true;
 
 var timeoutTimeout;
+var refreshInterval;
 
 var initialPeerList = {};
 var functionsForTypes = {};
@@ -98,8 +100,22 @@ var peerConnected = function(peerName) {
     console.log("Peer connected: "+peerName);
 }
 
+var disconnectedInterval
+
 var peerError = function(peerName, error) {
-    console.log("Peer error with "+peerName,error);
+    if (peer.disconnected && !disconnectedInterval) {
+        connectedToNetwork = false;
+        disconnectedFromNetwork();
+        disconnectedInterval = setInterval(function() {
+            if (peer.disconnected) {
+                peer.reconnect(); 
+            } else {
+                reconnectedToNetwork();
+                clearInterval(disconnectedInterval);
+                disconnectedInterval = null;
+            }
+        }, 1000);
+    }
 }
 
 var receivedData = function(from, type, data) {
@@ -210,97 +226,114 @@ var connect = function(name, callback) {
     peer = new Peer({key: peerJSKey});
     console.log("Peer object created!");
     peer.on("open", function(id) {
-        connectedToServer = true;
-        console.log("Peer open and ready!");
-        peerID = id;
-        
-        peer.on("connection", function(conn) {
-            conn.on("open", function(){
-                var joiningUsername = conn.label.trim();
-                if (joiningUsername.length > 4 && joiningUsername.length < 21) {
-                    if (containsSymbols(joiningUsername)) {
-                        console.log("Username with symbols!")
-                        conn.send({type:"registration-error", data:"Username contains forbidden symbols!"});
-                    }
-                    if (joiningUsername == peerName) {
-                        console.log("Username already taken!");
-                        conn.send({type:"registration-error", data:"Username already taken!"});
-                        return;
-                    }
-                    for (key in nicknames) {
-                        if (nicknames[key] == joiningUsername) {
+        if (!connectedToServer) {
+            connectedToServer = true;
+            console.log("Peer open and ready!");
+            peerID = id;
+            
+            refreshInterval = setInterval(function() {
+                if (peer.disconnected) {
+                    peer.reconnect();
+                } else {
+                    console.log("Refreshing connection...")
+                    peer.disconnect();
+                    setTimeout(function() {
+                        peer.reconnect();  
+                    }, 500);
+                }
+            }, refreshTime);
+
+            peer.on("connection", function(conn) {
+                conn.on("open", function(){
+                    var joiningUsername = conn.label.trim();
+                    if (joiningUsername.length > 4 && joiningUsername.length < 21) {
+                        if (containsSymbols(joiningUsername)) {
+                            console.log("Username with symbols!")
+                            conn.send({type:"registration-error", data:"Username contains forbidden symbols!"});
+                        }
+                        if (joiningUsername == peerName) {
                             console.log("Username already taken!");
                             conn.send({type:"registration-error", data:"Username already taken!"});
                             return;
                         }
-                    }
-                    registerPeerConnection(conn, joiningUsername);
-                } else {
-                    console.log("Invalid username!");
-                    conn.send({type:"registration-error", data:"Username must be 5 to 20 characters long!"});
-                } 
-            });
-        });
-        
-        // Setup ambassador tools
-        window.location.hash = peerID;
-        onMessageType("peer-list", function(from) {
-            console.log("Peer listing request from "+from);
-            var peerList = {};
-            for (key in connectedPeers) {
-                if (key != from) {
-                    peerList[nicknames[key]] = key;
-                }
-            }
-            peerList[peerName] = peerID;
-            sendData(from, "peer-list-response", peerList) 
-        });
-        
-        // Connect to ambassador if there is one
-        if (ambassadorID) {
-            hostConnection = peer.connect(ambassadorID, {label: peerName});
-            
-            hostConnection.on("open", function() {
-                connectedToServer = true;
-                console.log("Connected to host! Requesting peer list...")
-                registerPeerConnection(hostConnection);
-                
-                onMessageType("registration-error", function(from, data) {
-                    if (from == ambassadorID) {
-                        peer.destroy();
-                        connectedPeers = {};
-                        clearTimeout(timeoutTimeout);
-                        fatalError(data);
+                        for (key in nicknames) {
+                            if (nicknames[key] == joiningUsername) {
+                                console.log("Username already taken!");
+                                conn.send({type:"registration-error", data:"Username already taken!"});
+                                return;
+                            }
+                        }
+                        registerPeerConnection(conn, joiningUsername);
+                    } else {
+                        console.log("Invalid username!");
+                        conn.send({type:"registration-error", data:"Username must be 5 to 20 characters long!"});
                     } 
                 });
-                
-                onMessageType("peer-list-response", function(from, data) {
-                    console.log("Receive peer-list")
-                    if (from == ambassadorID) {
-                        clearMessageType("peer-list-response");
-                        clearMessageType("registration-error");
-                        fullyConnected = true;
-                        initialPeerList = data;
-                        connectToAllPeers(data);
+            });
+
+            // Setup ambassador tools
+            window.location.hash = peerID;
+            onMessageType("peer-list", function(from) {
+                console.log("Peer listing request from "+from);
+                var peerList = {};
+                for (key in connectedPeers) {
+                    if (key != from) {
+                        peerList[nicknames[key]] = key;
+                    }
+                }
+                peerList[peerName] = peerID;
+                sendData(from, "peer-list-response", peerList) 
+            });
+
+            // Connect to ambassador if there is one
+            if (ambassadorID) {
+                hostConnection = peer.connect(ambassadorID, {label: peerName});
+
+                hostConnection.on("open", function() {
+                    connectedToServer = true;
+                    console.log("Connected to host! Requesting peer list...")
+                    registerPeerConnection(hostConnection);
+
+                    onMessageType("registration-error", function(from, data) {
+                        if (from == ambassadorID) {
+                            peer.destroy();
+                            connectedPeers = {};
+                            clearInterval(refreshInterval);
+                            clearTimeout(timeoutTimeout);
+                            fatalError(data);
+                        } 
+                    });
+
+                    onMessageType("peer-list-response", function(from, data) {
+                        console.log("Receive peer-list")
+                        if (from == ambassadorID) {
+                            clearMessageType("peer-list-response");
+                            clearMessageType("registration-error");
+                            fullyConnected = true;
+                            initialPeerList = data;
+                            connectToAllPeers(data);
+                            callback();
+                            callback = function() {};
+                        }
+                    });
+
+                    hostConnection.send({type:"peer-list",data:"request"});
+                });
+
+                clearTimeout(timeoutTimeout);
+                timeoutTimeout = setTimeout(function() {
+                    if (!fullyConnected) {
+                        console.log("Heads up! Failed to connect to ambassador")
                         callback();
                         callback = function() {};
                     }
-                });
-                
-                hostConnection.send({type:"peer-list",data:"request"});
-            });
-            
-            clearTimeout(timeoutTimeout);
-            timeoutTimeout = setTimeout(function() {
-                if (!fullyConnected) {
-                    console.log("Heads up! Failed to connect to ambassador")
-                    callback();
-                    callback = function() {};
-                }
-            }, timeoutTime);
+                }, timeoutTime);
+            } else {
+                callback();
+                callback = function() {};
+            }
         } else {
-            callback();
-            callback = function() {};
+            console.log("Connection refreshed!");
         }
     });
     
