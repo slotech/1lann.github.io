@@ -18,11 +18,7 @@ var onYoutubePlayerReady = function() {
     setInterval(function() {
         if (lastSecond && currentMedia.state == "playing") {
             if (!((currentMedia.getCurrentTime() >= lastSecond) && (currentMedia.getCurrentTime() <= lastSecond+2))) {
-                if (currentMedia.ignoreSeek) {
-                    currentMedia.ignoreSeek = false;
-                } else {
-                    currentMedia.onSeek();
-                }
+                currentMedia.onSeek();
             } 
         }
         lastSecond = currentMedia.getCurrentTime();

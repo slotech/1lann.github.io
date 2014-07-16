@@ -143,14 +143,11 @@ MediaObject.prototype.pause = function() {
 MediaObject.prototype.seekTo = function(seconds) {
     this.skipEvent = true;
     if (this.type == "youtube") {
-        this.skipEvent = false;
-        this.ignoreSeek = true;
-        setTimeout(function(media) {
-            return function() {
-                media.ignoreSeek = false;    
-            }
-        }(this), 1000);
-        this.player.seekTo(seconds, true);
+        if (Math.abs(this.getCurrentTime() - seconds) > 1) {
+            this.player.seekTo(seconds, true);
+        } else {
+            this.skipEvent = false;
+        }
     }
 }
 
@@ -163,20 +160,20 @@ MediaObject.prototype.getCurrentTime = function() {
 MediaObject.prototype.destroy = function() {
     if (this.type == "youtube") {
         console.log("Destroying player...");
-        this.active = false;
-        this.type = false;
-        this.code = false;
-        this.player = false;
-        this.element = false;
-        this.skipEvent = false;
-        this.catchUp = false;
-        this.state = "loading";
-        this.buffering = false;
-        this.ignoreSeek = false;
         this.player.destroy();
-        if (this.element) {
-            this.element.remove();
-        }
+    }
+    this.active = false;
+    this.type = false;
+    this.code = false;
+    this.player = false;
+    this.element = false;
+    this.skipEvent = false;
+    this.catchUp = false;
+    this.state = "loading";
+    this.buffering = false;
+    this.ignoreSeek = false;
+    if (this.element) {
+        this.element.remove();
     }
 }
 
@@ -201,7 +198,7 @@ MediaObject.prototype.onPlay = function() {
         this.state = "playing";
         if (this.buffering) {
             this.buffering = false;
-            setTimeout(function(){requestData("request-media-data")}, 1000);
+            setTimeout(function(){requestData("request-media-data")}, 500);
         }
         if (!this.skipEvent) {
             this.broadcastUpdate();  
@@ -221,7 +218,7 @@ MediaObject.prototype.onStop = function() {
 
 MediaObject.prototype.onSeek = function() {
     if (!this.skipEvent) {
-        console.log("Detected seek")
+        console.log("Detected seek");
         this.broadcastUpdate();
     } else {
         this.skipEvent = false;
