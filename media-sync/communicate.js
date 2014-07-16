@@ -235,7 +235,6 @@ var connect = function(name, callback) {
                 if (peer.disconnected) {
                     peer.reconnect();
                 } else {
-                    console.log("Refreshing connection...")
                     peer.disconnect();
                     setTimeout(function() {
                         peer.reconnect();  
@@ -333,7 +332,7 @@ var connect = function(name, callback) {
                 callback = function() {};
             }
         } else {
-            console.log("Connection refreshed!");
+            // Connection refreshed!
         }
     });
     
