@@ -62,14 +62,14 @@ var sendData = function(to, type, data) {
 }
 
 var requestData = function(type) {
-    for (key in connectedPeers) {
+    for (var key in connectedPeers) {
         sendData(key, type, "request");
         return;
     }
 }
 
 var broadcastData = function(type, data) {
-    for (key in connectedPeers) {
+    for (var key in connectedPeers) {
         sendData(key, type, data);
     }
 }
@@ -156,7 +156,7 @@ var registerPeerConnection = function(conn, label) {
             peerDisconnected(this.peer, username);
         } else if (connectedToNetwork) {
             recoveryPeerList = [];
-            for (key in connectedPeers) {
+            for (var key in connectedPeers) {
                 recoveryPeerList[nicknames[key]] = key;
             }
             connectedToNetwork = false;
@@ -189,7 +189,7 @@ var registerPeerConnection = function(conn, label) {
     }
     
     if (connectedToNetwork) {
-        for (key in initialPeerList) {
+        for (var key in initialPeerList) {
             if (initialPeerList[key] == conn.peer) {
                 return;
             }
@@ -200,7 +200,7 @@ var registerPeerConnection = function(conn, label) {
 
 var connectToAllPeers = function(peerList) {
     var nicknameBuffer = {};
-    for (key in peerList) {
+    for (var key in peerList) {
         if ((peerList[key] == ambassadorID) && connectedToNetwork) {
             nicknames[ambassadorID] = key;
         } else {
@@ -255,7 +255,7 @@ var connect = function(name, callback) {
                             conn.send({type:"registration-error", data:"Username already taken!"});
                             return;
                         }
-                        for (key in nicknames) {
+                        for (var key in nicknames) {
                             if (nicknames[key] == joiningUsername) {
                                 console.log("Username already taken!");
                                 conn.send({type:"registration-error", data:"Username already taken!"});
@@ -275,7 +275,7 @@ var connect = function(name, callback) {
             onMessageType("peer-list", function(from) {
                 console.log("Peer listing request from "+from);
                 var peerList = {};
-                for (key in connectedPeers) {
+                for (var key in connectedPeers) {
                     if (key != from) {
                         peerList[nicknames[key]] = key;
                     }
@@ -362,7 +362,8 @@ var connect = function(name, callback) {
 }
 
 window.onbeforeunload = function(e) {
-    for (key in connectedPeers) {
+    peer.destroy();
+    for (var key in connectedPeers) {
         var lastConnected = {};
         lastConnected[peerID] = key;
         localStorage.setItem("lastConnected", JSON.stringify(lastConnected));

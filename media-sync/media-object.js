@@ -1,3 +1,5 @@
+var displayDivID = "content-display-area"
+
 var peopleReadyToPlay = [];
 
 var latency = 100;
@@ -5,7 +7,7 @@ var latency = 100;
 var youtubeMatcher = /www\.youtube\.com\/watch\?v=([^&]+)/
 
 var addToReadyToPlay = function(person) {
-    for (key in peopleReadyToPlay) {
+    for (var key in peopleReadyToPlay) {
         if (person == peopleReadyToPlay[key]) {
             return false;
         }
@@ -21,10 +23,12 @@ var MediaObject = function(url) {
     this.player = false;
     this.element = false;
     this.skipEvent = false;
+    this.skipSeek = false;
     this.catchUp = false;
     this.state = "loading";
     this.buffering = false;
-    this.ignoreSeek = false;
+    this.broadcastOnNextUpdate = false;
+    this.altCurrentTime = false;
     if (url && this.getCodeFromURL(url)) {
         var typeAndCode = this.getCodeFromURL(url);
         this.type = typeAndCode[0];
@@ -34,6 +38,7 @@ var MediaObject = function(url) {
     
     onMessageType("media-data", function(media) {
         return function(from, data) {
+            console.log("Set state: ",data)
             media.setSerializedState(from, data);
         }
     }(this));
@@ -54,9 +59,9 @@ MediaObject.prototype.displayMedia = function() {
     if (this.code) {
         if (this.type == "youtube") {
             this.active = true;
-            this.player = new YT.Player("content-display-area", {
-                height: "390",
-                width: "640",
+            this.player = new YT.Player(displayDivID, {
+                height: "450px",
+                width: "100%",
                 videoId: this.code,
                 events: {
                     "onReady": onYoutubePlayerReady,
@@ -64,6 +69,12 @@ MediaObject.prototype.displayMedia = function() {
                 }
             });
             return true;
+        } else if (this.type == "soundcloud") {
+            this.active = true;
+            this.element = $('<iframe width="100%" height="450" scrolling="no" frameborder="no" src="https://w.soundcloud.com/player/?url='+ this.code +'&amp;auto_play=true&amp;hide_related=true&amp;show_comments=false&amp;show_user=true&amp;show_reposts=false&amp;visual=true"></iframe>');
+            $("#"+displayDivID).append(this.element);
+            this.player = SC.Widget(this.element.get(0));
+            this.player.bind(SC.Widget.Events.READY, onSCPlayerReady);
         }
     } else {
         console.log("Attempt to display media without a code");
@@ -85,7 +96,6 @@ MediaObject.prototype.setSerializedState = function(from, serializedState) {
     console.log("Setting state from message...")
     if (serializedState["type"] == this.type && serializedState["code"] == this.code) {
         console.log("Updating currently playing media");
-        var curSeconds = new Date().getTime() / 1000;
         this.seekTo(serializedState["time"]);
         if (serializedState["state"]) {
             if (serializedState["state"] == "paused") {
@@ -125,35 +135,44 @@ MediaObject.prototype.sendUpdate = function(target) {
 MediaObject.prototype.play = function() {
     if (this.state != "playing") {
         this.skipEvent = true;
-    }
-    if (this.type == "youtube") {
-        this.player.playVideo();
+        if (this.type == "youtube") {
+            this.player.playVideo();
+        } else if (this.type == "soundcloud") {
+            this.player.play();
+        }
     }
 }
 
 MediaObject.prototype.pause = function() {
     if (this.state != "paused") {
         this.skipEvent = true;
-    }
-    if (this.type == "youtube") {
-        this.player.pauseVideo();
+        if (this.type == "youtube") {
+            this.player.pauseVideo();
+        } else if (this.type == "soundcloud") {
+            this.player.pause();
+        }
     }
 }
 
 MediaObject.prototype.seekTo = function(seconds) {
-    this.skipEvent = true;
+    this.skipSeek = true;
     if (this.type == "youtube") {
         if (Math.abs(this.getCurrentTime() - seconds) > 1) {
             this.player.seekTo(seconds, true);
         } else {
-            this.skipEvent = false;
+            this.skipSeek = false;
         }
+    } else if (this.type == "soundcloud") {
+        console.log("Internal seek");
+        this.player.seekTo(seconds*1000);
     }
 }
 
 MediaObject.prototype.getCurrentTime = function() {
     if (this.type == "youtube") {
         return this.player.getCurrentTime();
+    } else if (this.type == "soundcloud") {
+        return this.altCurrentTime;
     }
 }
 
@@ -162,19 +181,21 @@ MediaObject.prototype.destroy = function() {
         console.log("Destroying player...");
         this.player.destroy();
     }
+    if (this.element) {
+        this.element.remove();
+    }
     this.active = false;
     this.type = false;
     this.code = false;
     this.player = false;
     this.element = false;
     this.skipEvent = false;
+    this.skipSeek = false;
     this.catchUp = false;
     this.state = "loading";
     this.buffering = false;
-    this.ignoreSeek = false;
-    if (this.element) {
-        this.element.remove();
-    }
+    this.broadcastOnNextUpdate = false;
+    this.altCurrentTime = false;
 }
 
 MediaObject.prototype.onPause = function() {
@@ -191,7 +212,6 @@ MediaObject.prototype.onPause = function() {
 }
 
 MediaObject.prototype.onPlay = function() {
-    console.log("Play event");
     if (this.state == "loading") {
         this.readyToPlay();
     } else {
@@ -217,11 +237,15 @@ MediaObject.prototype.onStop = function() {
 }
 
 MediaObject.prototype.onSeek = function() {
-    if (!this.skipEvent) {
+    if (!this.skipSeek) {
         console.log("Detected seek");
-        this.broadcastUpdate();
+        if (this.type == "youtube") {
+            media.broadcastUpdate();
+        } else if (this.type == "soundcloud") {
+            this.broadcastOnNextUpdate = true;
+        }
     } else {
-        this.skipEvent = false;
+        this.skipSeek = false;
     }
 }
 
@@ -249,6 +273,9 @@ MediaObject.prototype.getCodeFromURL = function(url) {
         console.log("Matched youtube video");
         var videoCode = youtubeMatcher.exec(url)[1];
         return ["youtube", videoCode];
+    } else if (url.indexOf("//soundcloud.com") > 0) {
+        console.log("Matched soundcloud audio");
+        return ["soundcloud", url];
     } else {
         console.log("Invalid");
         return false;

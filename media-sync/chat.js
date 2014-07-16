@@ -72,7 +72,7 @@ $("#header-area #connected-list-area button").click(function() {
         var list = $("#header-area #connected-list-area #connected-list ul");
         list.html("");
         list.append("<li style='color: " + getUserColor(myUsername) + ";'>" + myUsername + " (You)</li>")
-        for (key in nicknames) {
+        for (var key in nicknames) {
             list.append("<li style='color: " + getUserColor(nicknames[key]) + ";'>" + nicknames[key] + "</li>");
         }
         $("#header-area #connected-list-area #connected-list").show();
