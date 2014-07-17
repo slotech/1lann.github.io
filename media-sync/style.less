@@ -6,7 +6,7 @@
 @demo-color: #000;
 
 #login-area {
-    //display: @production;
+    display: @production;
     @top-spacer: 50px;
     top: @top-spacer;
     
@@ -30,7 +30,7 @@
 }
 
 #interaction-area {
-    display: @production;
+    //display: @production;
     width: 100%;
 }
 
@@ -202,5 +202,31 @@ button {
     }
     @media (min-width: @screen-lg-min) {
         width: 720px;
+    }
+    
+    #content-selector {
+        height: 300px;
+        
+        span.glyphicon {
+            display: inline-block;
+            font-size: 30px;
+        }
+        
+        #volume-slider {
+            position: relative;
+            display: inline-block;
+            width: 550px;
+            margin-left: 10px;
+            bottom: 5px;
+        }
+    }
+    
+    #hidden-test-area {
+        position: fixed;
+        opacity: 0;
+        top: -9999px;
+        left: -9999px;
+        height: 500px;
+        width: 500px;
     }
 }

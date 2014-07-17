@@ -6,6 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
 	<title>Media Sync</title>
 	<link href="//maxcdn.bootstrapcdn.com/bootstrap/3.2.0/css/bootstrap.min.css" rel="stylesheet">
+    <link href="jquery.nouislider.css" rel="stylesheet">
     <link href="style.css" rel="stylesheet">
 </head>
 <body>
@@ -43,16 +44,16 @@
         </div>
         <div id="content-area">
             <div id="content-selector">
-                <div class="input-group input-group-lg">
-                  <input type="text" class="form-control" placeholder="Enter a URL...">
-                  <span class="input-group-btn">
-                    <button class="btn btn-default" type="button">Load</button>
-                  </span>
+                <div id="volume-controls">
+                    <span class="glyphicon glyphicon-volume-up"></span>
+                    <div id="volume-slider"></div>
                 </div>
+                <div id="playlist-manager"></div>
             </div>
             <div id="content-display-area">
             
             </div>
+            <div id="hidden-test-area"></div>
         </div>
         <div id="chat-area">
             <div id="message-area">
@@ -61,20 +62,21 @@
                 <input type="text" class="form-control input-lg" placeholder="Send a message...">
             </div>
         </div>
-        
     </div>
 </div>
 <script src="http://code.jquery.com/jquery-2.1.1.min.js"></script>
 <script src="http://code.jquery.com/color/jquery.color-2.1.2.min.js"></script>
-<script src="auto-grow.js"></script>
+<script src="scripts/auto-grow.js"></script>
 <script src="//maxcdn.bootstrapcdn.com/bootstrap/3.2.0/js/bootstrap.min.js"></script>
 <script src="http://cdn.peerjs.com/0.3/peer.js"></script>
+<script src="//cdnjs.cloudflare.com/ajax/libs/noUiSlider/6.2.0/jquery.nouislider.min.js"></script>
 <script src="https://w.soundcloud.com/player/api.js"></script>
-<script src="communicate.js"></script>
-<script src="interaction.js"></script>
-<script src="connect.js"></script>
-<script src="chat.js"></script>
-<script src="media-object.js"></script>
-<script src="sync-player.js"></script>
+<script src="scripts/communicate.js"></script>
+<script src="scripts/interaction.js"></script>
+<script src="scripts/connect.js"></script>
+<script src="scripts/chat.js"></script>
+<script src="scripts/queue.js"></script>
+<script src="scripts/media-object.js"></script>
+<script src="scripts/sync-player.js"></script>
 </body>
 </html>
