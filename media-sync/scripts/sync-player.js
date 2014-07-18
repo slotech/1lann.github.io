@@ -1,6 +1,9 @@
-var loadButton = $("#interaction-area #content-area #content-selector .input-group button");
-var loadField = $("#interaction-area #content-area #content-selector .input-group input");
 var contentArea = $("#interaction-area #content-area #content-display-area");
+
+var mediaVolume = 0;
+
+var seekInterval;
+var volumeInterval;
 
 // Random youtube shit
 var tag = document.createElement('script');
@@ -15,7 +18,7 @@ var onYoutubePlayerReady = function() {
     
     var lastSecond;
     
-    setInterval(function() {
+    seekInterval = setInterval(function() {
         if (lastSecond && currentMedia.state == "playing") {
             if (!((currentMedia.getCurrentTime() >= lastSecond) && (currentMedia.getCurrentTime() <= lastSecond+2))) {
                 currentMedia.onSeek();
@@ -23,11 +26,20 @@ var onYoutubePlayerReady = function() {
         }
         lastSecond = currentMedia.getCurrentTime();
     }, 1000);
+    
+    volumeInterval = setInterval(function() {
+        mediaVolume = currentMedia.player.getVolume();
+        updateVolumeBar();
+    }, 500);
 }
 
 var onYoutubePlayerStateChange = function(obj) {
     var state = obj.data;
     if (state == 1) {
+        if (currentMedia.state == "loading") {
+            console.log("Volume set");
+            currentMedia.player.setVolume(mediaVolume);
+        }
         if (currentMedia.state != "playing") {
             currentMedia.onPlay();
         }
@@ -83,6 +95,10 @@ var onHTML5PlayerReady = function(media) {
         media.onPause();
     });
     
+    media.player.addEventListener("volumechange", function() {
+        media.onVolumeChange();
+    });
+    
     media.player.addEventListener("canplay", function() {
         console.log("Metdata loaded");
         if (media.state == "loading") {
@@ -95,15 +111,26 @@ var onHTML5PlayerReady = function(media) {
     });
 }
 
-loadButton.click(function() {
-    if (loadField.val().trim().length >= 1) {
-        if (currentMedia.active) {
-            currentMedia.destroy();
-        }
-        currentMedia = new MediaObject(loadField.val().trim());
-        if (!currentMedia.type) {
-            console.log("Failed to load Media!")
-        }
+if (localStorage.getItem("volume")) {
+    mediaVolume = Number(localStorage.getItem("volume"));
+}
+
+var rangeSlider = $("#content-area #content-selector #volume-controls #volume-slider").noUiSlider({
+    start: 50,
+    connect: "lower",
+    range: {
+        "min": 0,
+        "max": 100
     }
 });
 
+rangeSlider.on("slide", function(){
+    mediaVolume = rangeSlider.val();
+    currentMedia.setVolume(mediaVolume);
+})
+
+var updateVolumeBar = function() {
+    rangeSlider.val(mediaVolume);
+}
+
+updateVolumeBar();

@@ -62,27 +62,27 @@ var displayMessage = function(message, user) {
 
 var slideDown = false;
 
-$("#header-area #connected-list-area button").click(function() {
+$("#chat-area #connected-list-area button").click(function() {
     if (slideDown) {
-        $("#header-area #connected-list-area #connected-list").hide();
-        $("#header-area #connected-list-area button").removeClass("active");
-        $("#header-area #connected-list-area button").blur();
+        $("#chat-area #connected-list-area #connected-list").hide();
+        $("#chat-area #connected-list-area button").removeClass("active");
+        $("#chat-area #connected-list-area button").blur();
     } else {
-        $("#header-area #connected-list-area button").addClass("active");
-        var list = $("#header-area #connected-list-area #connected-list ul");
+        $("#chat-area #connected-list-area button").addClass("active");
+        var list = $("#chat-area #connected-list-area #connected-list ul");
         list.html("");
         list.append("<li style='color: " + getUserColor(myUsername) + ";'>" + myUsername + " (You)</li>")
         for (var key in nicknames) {
             list.append("<li style='color: " + getUserColor(nicknames[key]) + ";'>" + nicknames[key] + "</li>");
         }
-        $("#header-area #connected-list-area #connected-list").show();
+        $("#chat-area #connected-list-area #connected-list").show();
     }
     
     slideDown = !slideDown;
 });
 
 var startChat = function(username) {
-    var onlineBadge = $("#header-area #connected-list-area button .badge");
+    var onlineBadge = $("#chat-area #connected-list-area button .badge");
     
     disconnectedFromNetwork = function() {
         displayMessage("Connection lost!", "System");

@@ -50,13 +50,13 @@
 /* Slider size and handle placement;
  */
 .noUi-horizontal {
-	height: 12px;
+	height: 6px;
 }
 .noUi-horizontal .noUi-handle {
-	width: 25px;
-	height: 25px;
-	left: -12px;
-	top: -7px;
+	width: 15px;
+	height: 15px;
+	left: -7px;
+	top: -4px;
 }
 .noUi-horizontal.noUi-extended {
 	padding: 0 15px;
@@ -120,6 +120,7 @@
  */
 .noUi-handle:before,
 .noUi-handle:after {
+    opacity: 0;
 	content: "";
 	display: block;
 	position: absolute;
@@ -130,6 +131,7 @@
 	top: 6px;
 }
 .noUi-handle:after {
+    opacity: 0;
 	left: 13px;
 }
 .noUi-vertical .noUi-handle:before,

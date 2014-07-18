@@ -7,6 +7,7 @@
 	<title>Media Sync</title>
 	<link href="//maxcdn.bootstrapcdn.com/bootstrap/3.2.0/css/bootstrap.min.css" rel="stylesheet">
     <link href="jquery.nouislider.css" rel="stylesheet">
+    <link href="fontello.css" rel="stylesheet">
     <link href="style.css" rel="stylesheet">
 </head>
 <body>
@@ -30,6 +31,45 @@
     <div id="interaction-area">
         <div id="header-area">
             <h1>Chat room name</h1>
+        </div>
+        <div id="content-area">
+            <div id="content-selector">
+                <span class="glyphicon glyphicon-volume-up"></span>
+                <div id="volume-controls">
+                    <div id="volume-slider"></div>
+                </div>
+                <button type="button" id="queue-button" class="btn btn-lg btn-default pull-right"><span class="glyphicon glyphicon-list"></span></button>
+                <div class="btn-group btn-group-lg pull-right">
+                    <button type="button" id="previous-media-button" class="btn btn-default"><span class="glyphicon glyphicon-fast-backward"></span></button>
+                    <button type="button" id="next-media-button" class="btn btn-default"><span class="glyphicon glyphicon-fast-forward"></span></button>
+                </div>
+                <div id="queue-manager-container">
+                    <div id="queue-manager">
+                        <ul class="list-group">
+                            <li class="list-group-item active">
+                                <span class="icon-headphones"></span>
+                                <span class="media-name">[Dubstep] - Au5 - Follow You (feat. Danyka Nadeau) (VIP Mix) [Remix EP Released in Japan]</span>
+                                <button type="button" class="close pull-right delete-button"><span class="glyphicon glyphicon-remove"></span>
+                                </button><button type="button" class="close pull-right play-button"><span class="glyphicon glyphicon-play"></span></button>
+                            </li>
+                        </ul>
+                    </div>
+                    <div class="input-group" id="queue-input">
+                      <input type="text" class="form-control" placeholder="Enter a URL..."  data-toggle="popover" data-placement="bottom" data-trigger="manual" data-container="body" data-content="Not valid media!">
+                      <div class="input-group-btn">
+                        <button id="queue-now-button" class="btn btn-default" type="button">Now</button>
+                        <button id="queue-next-button" class="btn btn-default" type="button">Next</button>
+                        <button id="queue-last-button" class="btn btn-default" type="button">Last</button>
+                      </div>
+                    </div>
+                </div>
+            </div>
+            <div id="content-display-area">
+            
+            </div>
+            <div id="hidden-test-area"></div>
+        </div>
+        <div id="chat-area">
             <div id="connected-list-area">
                 <button type="button" class="btn btn-default btn-lg">
                     <span class="glyphicon glyphicon-user"></span>
@@ -41,21 +81,6 @@
                     </ul>
                 </div>
             </div>
-        </div>
-        <div id="content-area">
-            <div id="content-selector">
-                <div id="volume-controls">
-                    <span class="glyphicon glyphicon-volume-up"></span>
-                    <div id="volume-slider"></div>
-                </div>
-                <div id="playlist-manager"></div>
-            </div>
-            <div id="content-display-area">
-            
-            </div>
-            <div id="hidden-test-area"></div>
-        </div>
-        <div id="chat-area">
             <div id="message-area">
             </div>
             <div id="input-box">
@@ -71,6 +96,7 @@
 <script src="http://cdn.peerjs.com/0.3/peer.js"></script>
 <script src="//cdnjs.cloudflare.com/ajax/libs/noUiSlider/6.2.0/jquery.nouislider.min.js"></script>
 <script src="https://w.soundcloud.com/player/api.js"></script>
+<script src="scripts/Sortable.min.js"></script>
 <script src="scripts/communicate.js"></script>
 <script src="scripts/interaction.js"></script>
 <script src="scripts/connect.js"></script>
@@ -78,5 +104,6 @@
 <script src="scripts/queue.js"></script>
 <script src="scripts/media-object.js"></script>
 <script src="scripts/sync-player.js"></script>
+<script src="scripts/queue-interaction.js"></script>
 </body>
 </html>

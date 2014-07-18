@@ -85,6 +85,6 @@ var runEverything = function(username) {
     setupInteractionResponses();
     
     requestData("request-title");
-    requestData("request-media-data")
+    requestData("request-queue-data");
     startChat(username);
 }

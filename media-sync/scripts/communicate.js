@@ -362,6 +362,7 @@ var connect = function(name, callback) {
 }
 
 window.onbeforeunload = function(e) {
+    localStorage.setItem("volume", mediaVolume.toString())
     for (var key in connectedPeers) {
         var lastConnected = {};
         lastConnected[peerID] = key;

@@ -1,14 +1,3 @@
-$("#content-area #content-selector #volume-controls #volume-slider").noUiSlider({
-    start: 50,
-    connect: "lower",
-    range: {
-        "min": 0,
-        "max": 100
-    }
-});
-
-// TODO: Add volume api
-
 var displayDivID = "content-display-area"
 
 var peopleReadyToPlay = [];
@@ -126,16 +115,8 @@ MediaObject.prototype.setSerializedState = function(from, serializedState) {
             }
         }
     } else {
-        console.log("Loading new media...");
-        this.destroy();
-        this.type = serializedState["type"];
-        this.code = serializedState["code"];
-        if (serializedState["state"] == "ready") {
-            addToReadyToPlay(from);
-        } else {
-            this.catchUp = true;
-        }
-        this.displayMedia();
+        console.log("Unknown media! Requesting for queue update...")
+        requestData("request-queue-data");
     }
 }
 
@@ -198,10 +179,32 @@ MediaObject.prototype.getCurrentTime = function() {
     }
 }
 
+MediaObject.prototype.getVolume = function() {
+    if (this.type == "youtube") {
+        return this.player.getVolume();
+    } else if (this.type == "soundcloud") {
+        return mediaVolume;
+    } else if (this.type == "html5") {
+        return this.player.volume*100;
+    }
+}
+
+MediaObject.prototype.setVolume = function(volume) {
+    if (this.type == "youtube") {
+        this.player.setVolume(volume);
+    } else if (this.type == "soundcloud") {
+        this.player.setVolume(volume);
+    } else if (this.type == "html5") {
+        this.player.volume = volume/100;
+    }
+}
+
 MediaObject.prototype.destroy = function() {
     if (this.type == "youtube") {
         console.log("Destroying player...");
         this.player.destroy();
+        clearInterval(seekInterval);
+        clearInterval(volumeInterval);
     }
     if (this.element) {
         this.element.remove();
@@ -256,6 +259,9 @@ MediaObject.prototype.onBuffering = function() {
 
 MediaObject.prototype.onStop = function() {
     this.state = "stopped";
+    if (queueObject.currentlyPlaying < queueObject.queue.length-1) {
+        queueObject.play(queueObject.currentlyPlaying+1);
+    }
 }
 
 MediaObject.prototype.onSeek = function() {
@@ -271,9 +277,15 @@ MediaObject.prototype.onSeek = function() {
     }
 }
 
+MediaObject.prototype.onVolumeChange = function() {
+    mediaVolume = this.getVolume();
+    updateVolumeBar();
+}
+
 MediaObject.prototype.readyToPlay = function() {
     console.log("Ready to play!");
     this.state = "ready";
+    this.setVolume(mediaVolume);
     this.pause();
     if (this.catchUp) {
         console.log("BUT WAIT! CHATCHUP!")
