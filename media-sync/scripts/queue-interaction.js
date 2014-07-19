@@ -1,4 +1,3 @@
-var contentSelectorStr = "#interaction-area #content-area #content-selector ";
 var queueButton = $(contentSelectorStr+"#queue-button");
 var queueContainer = $(contentSelectorStr+"#queue-manager-container")
 var queueList = $(contentSelectorStr+"#queue-manager ul");
@@ -79,7 +78,7 @@ var drawQueue = function() {
         var nameObject = $("<span class='media-name'>" + currentObject.title + " [" + secondsToMinutes(currentObject.duration) + "]</span>")
         $("#"+hiddenDivID).append(nameObject);
         if (nameObject.height() > 50) {
-            var amountToTrim = 80;
+            var amountToTrim = 70;
             var newTitle = currentObject.title.substr(0,amountToTrim)
             newTitle = newTitle.substr(0, newTitle.lastIndexOf(" "));
             console.log(amountToTrim);
@@ -95,7 +94,7 @@ var drawQueue = function() {
         var deleteButton = $("<button type='button' class='close pull-right delete-button'><span class='glyphicon glyphicon-remove'></span>")
         deleteButton.click(function(index) {
             return function() {
-                queueObject.delete(index);
+                queueObject.delete(Number(index));
         }}(key));
         
         listItem.append(deleteButton);
@@ -104,7 +103,7 @@ var drawQueue = function() {
             var playButtonObject = $("<button type='button' class='close pull-right play-button'><span class='glyphicon glyphicon-play'></span></button>")
             playButtonObject.click(function(index) {
             return function() {
-                queueObject.play(index);
+                queueObject.play(Number(index));
             }}(key));
             
             listItem.append(playButtonObject);
@@ -235,7 +234,7 @@ var updateButtons = function() {
     }
     
     if (queueObject.queue.length < 1) {
-        nextButton.attr("disabled", false);
-        previousButton.attr("disabled", false);
+        nextButton.attr("disabled", true);
+        previousButton.attr("disabled", true);
     }
 }
