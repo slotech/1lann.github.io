@@ -153,7 +153,7 @@ var enableQueueInput = function() {
 }
 
 var queueInputError = function() {
-    queueInputField.popover("show");
+    setTimeout(function(){queueInputField.popover("show")},200);
     enableQueueInput();
 }
 
@@ -231,6 +231,11 @@ var updateButtons = function() {
     if (queueObject.currentlyPlaying == 0) {
         previousButton.attr("disabled", true);
     } else {
+        previousButton.attr("disabled", false);
+    }
+    
+    if (queueObject.queue.length < 1) {
+        nextButton.attr("disabled", false);
         previousButton.attr("disabled", false);
     }
 }

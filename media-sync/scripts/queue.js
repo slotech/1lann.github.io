@@ -164,6 +164,9 @@ Queue.prototype.getMetadata = function(type, code, callback) {
 }
 
 Queue.prototype.getTypeAndCode = function(url) {
+    if (url.indexOf("http") < 0) {
+        url = "http://"+url;
+    }
     if (youtubeMatcher.exec(url)) {
         var videoCode = youtubeMatcher.exec(url)[1];
         return ["youtube", videoCode];

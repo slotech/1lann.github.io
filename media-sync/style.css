@@ -184,6 +184,9 @@ button {
   position: relative;
   top: 5px;
 }
+#content-area #content-display-area audio {
+  width: 100%;
+}
 #content-area #content-selector {
   height: 45px;
   width: 100%;
@@ -335,6 +338,6 @@ button {
 }
 .btn:disabled {
   opacity: 1;
-  background-color: #eeeeee;
-  color: #777777;
+  background-color: #eeeeee !important;
+  color: #777777 !important;
 }

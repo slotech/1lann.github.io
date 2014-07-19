@@ -73,7 +73,7 @@ MediaObject.prototype.displayMedia = function() {
         } else if (this.type == "html5") {
             this.active = true;
             console.log("HTML player created");
-            this.element = $("<audio id='html5player' src='" + this.code.replace(/&/g,"&amp;") + "' controls='true' autoplay='true' preload='auto' width='100%'></audio>");
+            this.element = $("<audio id='html5player' src='" + this.code.replace(/&/g,"&amp;") + "' controls='true' autoplay='true' preload='auto'></audio>");
             $("#"+displayDivID).append(this.element);
             this.player = this.element.get(0);
             this.pause();
