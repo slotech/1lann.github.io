@@ -55,7 +55,7 @@ var drawQueue = function() {
         var currentObject = queueObject.queue[key];
         var listItem;
         var playButton = true;
-        var mediaIcon = "headphones";
+        var mediaIcon = "doc";
         
         if (key < queueObject.currentlyPlaying) {
             listItem = $("<li class='list-group-item previous' order='" + key + "'></li>");

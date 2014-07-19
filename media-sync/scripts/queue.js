@@ -38,7 +38,11 @@ Queue.prototype.play = function(index, automated) {
     }
     if (!automated) { this.broadcastUpdate(); }
     if (this.queue.length > 0) {
-        currentMedia = new MediaObject(this.queue[this.currentlyPlaying].type, this.queue[this.currentlyPlaying].code);
+        if (automated) {
+            currentMedia = new MediaObject(this.queue[this.currentlyPlaying].type, this.queue[this.currentlyPlaying].code, true);
+        } else {
+            currentMedia = new MediaObject(this.queue[this.currentlyPlaying].type, this.queue[this.currentlyPlaying].code);
+        }
     } else {
         currentMedia.destroy();
     }
@@ -140,6 +144,7 @@ Queue.prototype.getMetadata = function(type, code, callback) {
             }
         }(callback, testPlayer));  
     } else if (type == "html5") {
+        console.log("Waiting for HTML event...");
         var testAudio = $("<audio id='html5audio' src='" + code.replace(/&/g,"&amp;") + "'></audio>")
         $("#"+hiddenDivID).append(testAudio);
         testAudio.get(0).addEventListener("error", function(callback) {

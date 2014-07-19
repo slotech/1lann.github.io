@@ -14,7 +14,8 @@ var addToReadyToPlay = function(person) {
     return true;
 }
 
-var MediaObject = function(type, code) {
+var MediaObject = function(type, code, catchUp) {
+    if (catchUp) console.log("Playing catch up?");
     this.active = false;
     this.type = type;
     this.code = code;
@@ -22,7 +23,7 @@ var MediaObject = function(type, code) {
     this.element = false;
     this.skipEvent = false;
     this.skipSeek = false;
-    this.catchUp = false;
+    this.catchUp = catchUp;
     this.state = "loading";
     this.buffering = false;
     this.broadcastOnNextUpdate = false;
@@ -63,6 +64,7 @@ MediaObject.prototype.displayMedia = function() {
                     "onStateChange": onYoutubePlayerStateChange
                 }
             });
+            $("#"+displayDivID).attr("src",$("#"+displayDivID).attr("src")+"&rel=0");
             return true;
         } else if (this.type == "soundcloud") {
             this.active = true;
@@ -73,7 +75,7 @@ MediaObject.prototype.displayMedia = function() {
         } else if (this.type == "html5") {
             this.active = true;
             console.log("HTML player created");
-            this.element = $("<audio id='html5player' src='" + this.code.replace(/&/g,"&amp;") + "' controls='true' autoplay='true' preload='auto'></audio>");
+            this.element = $("<video id='html5player' src='" + this.code + "' controls='true' autoplay='true' preload='auto'></video>");
             $("#"+displayDivID).append(this.element);
             this.player = this.element.get(0);
             this.pause();
