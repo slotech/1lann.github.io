@@ -2,7 +2,7 @@ var contentSelectorStr = "#interaction-area #content-area #content-selector ";
 
 var contentArea = $("#interaction-area #content-area #content-display-area");
 
-var mediaVolume = 0;
+var mediaVolume = 50;
 
 var seekInterval;
 var volumeInterval;
