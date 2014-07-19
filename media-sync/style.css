@@ -191,8 +191,7 @@ button {
   height: 45px;
   width: 100%;
 }
-#content-area #content-selector [class^="glyphicon-volume-"],
-#content-area #content-selector [class*="glyphicon-volume-"] {
+#content-area #content-selector #volume-state-icon {
   display: inline-block;
   position: absolute;
   top: 8px;

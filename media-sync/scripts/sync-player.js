@@ -1,3 +1,5 @@
+var contentSelectorStr = "#interaction-area #content-area #content-selector ";
+
 var contentArea = $("#interaction-area #content-area #content-display-area");
 
 var mediaVolume = 0;
@@ -127,10 +129,37 @@ var rangeSlider = $("#content-area #content-selector #volume-controls #volume-sl
 rangeSlider.on("slide", function(){
     mediaVolume = rangeSlider.val();
     currentMedia.setVolume(mediaVolume);
+    if (mediaVolume < 1) {
+        $(contentSelectorStr+"#volume-state-icon").removeClass("glyphicon-volume-up");
+        $(contentSelectorStr+"#volume-state-icon").removeClass("glyphicon-volume-down");
+        $(contentSelectorStr+"#volume-state-icon").addClass("glyphicon-volume-off");
+    } else if (mediaVolume < 50) {
+        $(contentSelectorStr+"#volume-state-icon").removeClass("glyphicon-volume-up");
+        $(contentSelectorStr+"#volume-state-icon").addClass("glyphicon-volume-down");
+        $(contentSelectorStr+"#volume-state-icon").removeClass("glyphicon-volume-off");
+    } else {
+        $(contentSelectorStr+"#volume-state-icon").addClass("glyphicon-volume-up");
+        $(contentSelectorStr+"#volume-state-icon").removeClass("glyphicon-volume-down");
+        $(contentSelectorStr+"#volume-state-icon").removeClass("glyphicon-volume-off");
+    }
 })
 
 var updateVolumeBar = function() {
     rangeSlider.val(mediaVolume);
+    
+    if (mediaVolume < 1) {
+        $(contentSelectorStr+"#volume-state-icon").removeClass("glyphicon-volume-up");
+        $(contentSelectorStr+"#volume-state-icon").removeClass("glyphicon-volume-down");
+        $(contentSelectorStr+"#volume-state-icon").addClass("glyphicon-volume-off");
+    } else if (mediaVolume < 50) {
+        $(contentSelectorStr+"#volume-state-icon").removeClass("glyphicon-volume-up");
+        $(contentSelectorStr+"#volume-state-icon").addClass("glyphicon-volume-down");
+        $(contentSelectorStr+"#volume-state-icon").removeClass("glyphicon-volume-off");
+    } else {
+        $(contentSelectorStr+"#volume-state-icon").addClass("glyphicon-volume-up");
+        $(contentSelectorStr+"#volume-state-icon").removeClass("glyphicon-volume-down");
+        $(contentSelectorStr+"#volume-state-icon").removeClass("glyphicon-volume-off");
+    }
 }
 
 updateVolumeBar();

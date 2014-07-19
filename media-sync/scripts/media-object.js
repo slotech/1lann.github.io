@@ -209,6 +209,7 @@ MediaObject.prototype.destroy = function() {
     if (this.element) {
         this.element.remove();
     }
+    peopleReadyToPlay = [];
     this.active = false;
     this.type = false;
     this.code = false;

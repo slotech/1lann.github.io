@@ -45,6 +45,7 @@ Queue.prototype.play = function(index, automated) {
 }
 
 Queue.prototype.setSerializedQueue = function(serializedQueue) {
+    console.log("Received serialized queue");
     if (typeof(serializedQueue["queue"]) == "object" && typeof(serializedQueue["playing"]) == "number") {
         var currentlyPlayingCode;
         if (this.queue[this.currentlyPlaying]) {
@@ -52,6 +53,7 @@ Queue.prototype.setSerializedQueue = function(serializedQueue) {
         }
         this.queue = serializedQueue["queue"];
         if ((this.currentlyPlaying != serializedQueue["playing"]) || (!this.queue[serializedQueue["playing"]]) || (currentlyPlayingCode != this.queue[serializedQueue["playing"]].code)) {
+            console.log("New song, playing...");
             this.play(serializedQueue.playing, true);
         }
         if (queueOpen) drawQueue();
@@ -224,6 +226,7 @@ Queue.prototype.delete = function(index) {
     if (index == this.currentlyPlaying) {
         this.play(this.currentlyPlaying);
     }
+    this.broadcastUpdate();
     if (queueOpen) drawQueue();
     updateButtons();
 }
