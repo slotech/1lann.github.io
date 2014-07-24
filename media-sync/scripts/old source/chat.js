@@ -44,7 +44,7 @@ var displayMessage = function(message, user) {
         lastDiv = null;
         lastUser = null;
     } else if (lastUser == user) {
-        lastDiv.append("<span>" + sanatize(message) + "</span><br>")
+        lastDiv.append("<span>" + Autolinker.link(sanatize(message)) + "</span><br>")
     } else {
         var userColor = getUserColor(user);
         messageArea.append("<span class='username' style='color: " + userColor + ";'>" + user + "</span>")
@@ -52,7 +52,7 @@ var displayMessage = function(message, user) {
         lastUser = user;
         messageArea.append(lastDiv);
         lastDiv.css("borderColor", userColor);
-        lastDiv.append("<span>" + sanatize(message) + "</span><br>")
+        lastDiv.append("<span>" + Autolinker.link(sanatize(message)) + "</span><br>")
     }
     
     if (isBottom) {

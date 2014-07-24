@@ -195,7 +195,7 @@ MediaObject.prototype.setVolume = function(volume) {
     if (this.type == "youtube") {
         this.player.setVolume(volume);
     } else if (this.type == "soundcloud") {
-        this.player.setVolume(volume);
+        this.player.setVolume(volume / 100);
     } else if (this.type == "html5") {
         this.player.volume = volume/100;
     }
@@ -290,12 +290,12 @@ MediaObject.prototype.readyToPlay = function() {
     this.state = "ready";
     this.setVolume(mediaVolume);
     this.pause();
+    this.broadcastUpdate();
     if (this.catchUp) {
         console.log("BUT WAIT! CHATCHUP!")
         requestData("request-media-data");
         this.catchUp = false;
     } else {
-        this.broadcastUpdate();
         if (peopleReadyToPlay.length >= Object.keys(connectedPeers).length) {
             console.log("Everyone already ready! Playing...")
             setTimeout(function(media) { return function() {
